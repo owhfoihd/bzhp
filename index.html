@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Travel Journal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { background: #9AA581; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        .photo-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal img { max-width: 90%; max-height: 90%; }
+        .zepeda-btn { padding: 6px 14px; border: 2px solid #9AA581; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 0.9rem; }
+        .zepeda-btn:hover { background: #f0f4ec; }
+        .zepeda-btn.active { background: #9AA581; color: white; }
+        .section-header { cursor: pointer; user-select: none; }
+        .section-header:hover { background: #f9fafb; }
+        .collapse-arrow { transition: transform 0.3s; display: inline-block; }
+        .collapse-arrow.collapsed { transform: rotate(-90deg); }
+        .tag-suggestions { position: absolute; background: white; border: 1px solid #d1d5db; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 180px; overflow-y: auto; z-index: 100; display: none; width: 100%; }
+        .tag-suggestions.active { display: block; }
+        .tag-suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
+        .tag-suggestion-item:last-child { border-bottom: none; }
+        .tag-suggestion-item:hover, .tag-suggestion-item.selected { background-color: #e8ebe4; }
+        .star-btn { font-size: 1.6rem; cursor: pointer; transition: opacity 0.1s; }
+        .star-btn:hover { opacity: 0.7; }
+        .sub-star { font-size: 1.4rem; cursor: pointer; transition: opacity 0.1s; }
+        .sub-star:hover { opacity: 0.7; }
+        input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+        input[type="range"]::-webkit-slider-track { background: #e5e7eb; height: 6px; border-radius: 3px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #9AA581; height: 18px; width: 18px; border-radius: 50%; margin-top: -6px; }
+        .nav-btn { padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .nav-btn.active { background: white; }
+        .nav-btn:not(.active) { background: rgba(255,255,255,0.2); color: white; }
+        .sort-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; user-select: none; border: 2px solid #9AA581; color: #9AA581; background: white; transition: all 0.15s; }
+        .sort-chip.active { background: #9AA581; color: white; }
+        .sort-chip .chip-remove { font-size: 0.85rem; font-weight: 700; opacity: 0.7; margin-left: 2px; }
+        .sort-chip .chip-remove:hover { opacity: 1; }
+        .sort-option { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; user-select: none; border: 2px solid #d1d5db; color: #6b7280; background: white; transition: all 0.15s; }
+        .sort-option:hover { border-color: #9AA581; color: #9AA581; }
+        .filter-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; user-select: none; border: 2px solid #d1d5db; color: #6b7280; background: white; transition: all 0.15s; }
+        .filter-chip:hover { border-color: #859EAC; color: #859EAC; }
+        .filter-chip.active { background: #859EAC; color: white; border-color: #859EAC; }
+        .filter-chip .chip-remove { font-size: 0.85rem; font-weight: 700; opacity: 0.7; margin-left: 2px; }
+        /* Detail view */
+        .detail-photo-header {
+            width: 100%; height: 220px; object-fit: cover; display: block;
+        }
+        .detail-photo-placeholder {
+            width: 100%; height: 130px;
+            background: linear-gradient(135deg, #9AA581, #859EAC);
+        }
+        .detail-back-btn {
+            position: absolute; top: 12px; left: 12px;
+            background: rgba(0,0,0,0.45); color: white;
+            border: none; border-radius: 20px;
+            padding: 5px 14px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; backdrop-filter: blur(4px);
+        }
+        .detail-back-btn:hover { background: rgba(0,0,0,0.65); }
+        .stat-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        /* Success toast */
+        #successToast {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #2d6a4f; color: white; padding: 12px 24px;
+            border-radius: 999px; font-size: 0.9rem; font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            opacity: 0; transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none; z-index: 9998; white-space: nowrap;
+        }
+        #successToast.show {
+            opacity: 1; transform: translateX(-50%) translateY(0);
+        }
+        @media print { .no-print { display: none !important; } }
+        /* Password screen */
+        #passwordScreen {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #9AA581;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #passwordScreen.hidden { display: none; }
+        .pw-card {
+            background: white; border-radius: 20px;
+            padding: 40px 32px; width: 100%; max-width: 340px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        .pw-title {
+            font-size: 1.6rem; font-weight: 700; color: #2d3748; margin-bottom: 4px;
+        }
+        .pw-subtitle {
+            font-size: 0.85rem; color: #9AA581; margin-bottom: 28px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+        }
+        .pw-input {
+            width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb;
+            border-radius: 12px; font-size: 1rem; text-align: center;
+            letter-spacing: 0.15em; outline: none; transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        .pw-input:focus { border-color: #9AA581; }
+        .pw-input.error { border-color: #f87171; animation: shake 0.3s ease; }
+        .pw-btn {
+            width: 100%; padding: 14px; margin-top: 14px;
+            background: #9AA581; color: white; border: none;
+            border-radius: 12px; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s; font-family: inherit;
+        }
+        .pw-btn:hover { opacity: 0.88; }
+        .pw-error {
+            color: #f87171; font-size: 0.8rem; margin-top: 10px;
+            min-height: 18px; font-weight: 500;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+    </style>
+</head>
+<body class="p-3">
+
+<!-- Password Screen -->
+<div id="passwordScreen">
+    <div class="pw-card">
+        <div class="pw-title">My Travel Journal</div>
+        <div class="pw-subtitle">Private</div>
+        <input
+            type="password"
+            id="pwInput"
+            class="pw-input"
+            placeholder="Enter password"
+            onkeydown="if(event.key==='Enter') checkPassword()"
+            autocomplete="current-password"
+        />
+        <button class="pw-btn" onclick="checkPassword()">Unlock</button>
+        <div class="pw-error" id="pwError"></div>
+    </div>
+</div>
+
+<div id="appWrapper" class="hidden">
+<div class="max-w-3xl mx-auto">
+<div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+
+    <!-- Header -->
+    <div class="p-5 text-white" style="background-color: #9AA581;">
+        <h1 class="text-2xl font-bold mb-1">My Travel Journal</h1>
+        <p class="text-sm opacity-80 mb-3" id="placeCount">0 places visited</p>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="setView('list')" id="navList" class="nav-btn active" style="color:#9AA581;">List</button>
+            <button onclick="setView('map')" id="navMap" class="nav-btn">Map</button>
+            <button onclick="setView('stats')" id="navStats" class="nav-btn">Stats</button>
+            <button onclick="showForm()" id="navAdd" class="nav-btn" style="background:white;color:#859EAC;">+ Add Place</button>
+        </div>
+    </div>
+
+    <!-- Search/Filter Bar -->
+    <div id="filterBar" class="p-4 bg-gray-50 border-b">
+        <div class="flex flex-col gap-2">
+            <input type="text" id="searchInput" placeholder="Search places..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" autocomplete="off"/>
+            <div class="flex gap-2">
+                <button type="button" onclick="toggleFilterPanel()" id="filterToggleBtn" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 font-medium">Filter ▾</button>
+                <button type="button" onclick="toggleSortPanel()" id="sortToggleBtn" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 font-medium">Sort ▾</button>
+            </div>
+
+            <!-- Active filter chips display -->
+            <div id="activeFilterDisplay" class="hidden flex-wrap gap-1 flex"></div>
+            <!-- Active sort chips display -->
+            <div id="activeSortDisplay" class="hidden flex-wrap gap-1 flex"></div>
+
+            <!-- FILTER PANEL -->
+            <div id="filterPanel" class="hidden border border-gray-200 rounded-lg bg-white p-3 space-y-3">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Trip</div>
+                <div id="filterTripOptions" class="flex flex-wrap gap-2"></div>
+
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Filter by Rating</div>
+                <div class="flex flex-wrap gap-2" id="filterRatingOptions">
+                    <span class="filter-chip" data-type="rating" data-value="5" onclick="toggleFilterChip(this)">★★★★★ 5</span>
+                    <span class="filter-chip" data-type="rating" data-value="4.5" onclick="toggleFilterChip(this)">4.5+</span>
+                    <span class="filter-chip" data-type="rating" data-value="4" onclick="toggleFilterChip(this)">4+</span>
+                    <span class="filter-chip" data-type="rating" data-value="3" onclick="toggleFilterChip(this)">3+</span>
+                    <span class="filter-chip" data-type="rating" data-value="2" onclick="toggleFilterChip(this)">2+</span>
+                </div>
+
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Filter by Tag</div>
+                <div id="filterTagOptions" class="flex flex-wrap gap-2"></div>
+
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Filter by Visited With</div>
+                <div id="filterPeopleOptions" class="flex flex-wrap gap-2"></div>
+
+                <button onclick="clearAllFilters()" class="text-xs text-red-400 hover:text-red-600 mt-1">Clear all filters</button>
+            </div>
+
+            <!-- SORT PANEL -->
+            <div id="sortPanel" class="hidden border border-gray-200 rounded-lg bg-white p-3">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Active sorts <span class="font-normal text-gray-400">(first = primary, ↑ to reorder)</span></div>
+                <div id="sortChips" class="flex flex-wrap gap-2 mb-3"></div>
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Add sort</div>
+                <div id="sortOptions" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <form id="placeForm" class="p-4 bg-gray-50 border-b hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800" id="formTitle">Add New Place</h2>
+        </div>
+        <div class="space-y-3">
+
+            <!-- Name -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Place Name *</label>
+                <input type="text" id="placeName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Eiffel Tower"/>
+            </div>
+
+            <!-- Location -->
+            <div class="grid grid-cols-3 gap-2">
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">City *</label>
+                    <input type="text" id="placeCity" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Paris" autocomplete="off"/>
+                    <div id="citySuggestions" class="tag-suggestions"></div>
+                </div>
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">State</label>
+                    <input type="text" id="placeState" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="CA" autocomplete="off"/>
+                    <div id="stateSuggestions" class="tag-suggestions"></div>
+                </div>
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Country *</label>
+                    <input type="text" id="placeCountry" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="France" autocomplete="off"/>
+                    <div id="countrySuggestions" class="tag-suggestions"></div>
+                </div>
+            </div>
+
+            <!-- Trip Group -->
+            <div class="relative">
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Trip Group (optional)</label>
+                <input type="text" id="placeTrip" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Europe 2024, Honeymoon" autocomplete="off"/>
+                <div id="tripSuggestions" class="tag-suggestions"></div>
+            </div>
+
+            <!-- Maps -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Apple Maps Link (optional)</label>
+                <input type="url" id="placeMapLink" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://maps.apple.com/..."/>
+            </div>
+
+            <!-- Dates -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Visit Dates (optional)</label>
+                <div id="datesContainer" class="space-y-2"></div>
+                <button type="button" id="addDateBtn" class="mt-2 text-sm px-3 py-1 border rounded-lg" style="border-color:#9AA581;color:#9AA581;">+ Add Date</button>
+            </div>
+
+            <!-- Overall Rating -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Overall Rating: <span id="ratingValue">5</span>/5</label>
+                <div class="flex gap-1">
+                    <span class="star-btn" style="color:#9AA581;" onclick="setRating(1)">★</span>
+                    <span class="star-btn" style="color:#9AA581;" onclick="setRating(2)">★</span>
+                    <span class="star-btn" style="color:#9AA581;" onclick="setRating(3)">★</span>
+                    <span class="star-btn" style="color:#9AA581;" onclick="setRating(4)">★</span>
+                    <span class="star-btn" style="color:#9AA581;" onclick="setRating(5)">★</span>
+                </div>
+                <input type="hidden" id="placeRating" value="5">
+            </div>
+
+            <!-- Zepeda Stars -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Zepeda Stars (optional)</label>
+                <div class="flex gap-2">
+                    <button type="button" class="zepeda-btn" data-value="1" onclick="selectZepeda(1)">!</button>
+                    <button type="button" class="zepeda-btn" data-value="2" onclick="selectZepeda(2)">!!</button>
+                    <button type="button" class="zepeda-btn" data-value="3" onclick="selectZepeda(3)">!!!</button>
+                </div>
+                <input type="hidden" id="placeZepeda" value="0">
+            </div>
+
+            <!-- Sub Ratings -->
+            <div class="border-t pt-3">
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Sub-Ratings (optional)</label>
+                <div id="subRatingsContainer" class="space-y-2"></div>
+                <button type="button" onclick="addSubRating()" class="mt-2 text-sm px-3 py-1 border rounded-lg" style="border-color:#9AA581;color:#9AA581;">+ Add Sub-Rating</button>
+            </div>
+
+            <!-- Tags -->
+            <div class="grid grid-cols-2 gap-2">
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Type of Place</label>
+                    <input type="text" id="placeTypeTags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="restaurant, museum..." autocomplete="off"/>
+                    <div id="typeTagSuggestions" class="tag-suggestions"></div>
+                </div>
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Visited With</label>
+                    <input type="text" id="placePeopleTags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="family, friends..." autocomplete="off"/>
+                    <div id="peopleTagSuggestions" class="tag-suggestions"></div>
+                </div>
+            </div>
+
+            <!-- Photos -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Photos</label>
+                <input type="file" id="placePhotos" accept="image/*" multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/>
+                <div id="photoPreviewContainer" class="mt-2 flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Notes</label>
+                <textarea id="placeNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Memories, tips, thoughts..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mt-4">
+            <button type="submit" class="flex-1 text-white py-3 rounded-lg font-semibold text-sm" style="background-color:#9AA581;">Save Place</button>
+            <button type="button" id="cancelBtn" class="px-5 py-3 border border-gray-300 text-gray-600 rounded-lg text-sm font-semibold">Cancel</button>
+        </div>
+    </form>
+
+    <!-- LIST VIEW -->
+    <div id="listView" class="p-4">
+        <div id="placesList"><div class="text-center py-12 text-gray-400"><p class="text-lg font-medium">No places yet</p><p class="text-sm mt-1">Add your first travel destination above</p></div></div>
+    </div>
+
+    <!-- MAP VIEW -->
+    <div id="mapView" class="p-4 hidden">
+        <div id="mapContent"></div>
+    </div>
+
+    <!-- STATS VIEW -->
+    <div id="statsView" class="p-4 hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Statistics</h2>
+            <div class="flex gap-2">
+                <select id="yearReviewSelect" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Year in Review...</option>
+                </select>
+                <button onclick="exportPDF()" class="px-4 py-2 text-white rounded-lg text-sm font-semibold" style="background-color:#859EAC;">Export PDF</button>
+            </div>
+        </div>
+        <div id="statsContent"></div>
+        <div id="yearReviewContent" class="mt-4"></div>
+    </div>
+    <!-- DETAIL VIEW -->
+    <div id="detailView" class="hidden overflow-hidden">
+        <div class="relative" id="detailHeaderWrap">
+            <!-- photo or gradient fills here -->
+        </div>
+        <div class="p-4 space-y-4" id="detailBody"></div>
+        <div class="p-4 pt-0 flex gap-2">
+            <button onclick="detailEdit()" class="flex-1 py-3 rounded-lg font-semibold text-sm text-white" style="background:#9AA581;">Edit</button>
+            <button onclick="detailAddVisit()" class="flex-1 py-3 rounded-lg font-semibold text-sm text-white" style="background:#859EAC;">+ Add New Visit</button>
+        </div>
+    </div>
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="modal">
+        <span onclick="document.getElementById('photoModal').classList.remove('active')" class="absolute top-4 right-6 text-white text-4xl cursor-pointer">&times;</span>
+        <img id="modalImage" src="" alt="Photo">
+    </div>
+</div>
+
+<div class="text-center mt-4 text-white text-xs opacity-70 pb-2">Data saved locally in your browser</div>
+</div><!-- end max-w-3xl -->
+</div><!-- end appWrapper -->
+
+<!-- Export PDF container (hidden) -->
+<div id="pdfContent" style="display:none;"></div>
+
+<script>
+// ---- PASSWORD ----
+(function() {
+    function checkAuth(val) { return val === atob('YnpocCEyMCE1'); }
+    const SESSION_KEY = 'tj_auth';
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+        document.getElementById('passwordScreen').classList.add('hidden');
+        document.getElementById('appWrapper').classList.remove('hidden');
+    }
+    window.checkPassword = function() {
+        const input = document.getElementById('pwInput');
+        const err = document.getElementById('pwError');
+        if (checkAuth(input.value)) {
+            sessionStorage.setItem(SESSION_KEY, '1');
+            document.getElementById('passwordScreen').classList.add('hidden');
+            document.getElementById('appWrapper').classList.remove('hidden');
+            err.textContent = '';
+        } else {
+            input.classList.add('error');
+            err.textContent = 'Incorrect password. Try again.';
+            input.value = '';
+            setTimeout(() => input.classList.remove('error'), 400);
+        }
+    };
+})();
+
+// ---- MAIN APP ----
+let places = [];
+let editingId = null;
+let currentPhotos = [];
+let subRatingCounter = 0;
+let currentView = 'list';
+let lastClickedStar = 0;
+let starClickCount = 0;
+let subRatingClicks = {};
+
+// Sets
+let allTypeTags = new Set(), allPeopleTags = new Set();
+let allCities = new Set(), allStates = new Set(), allCountries = new Set(), allTrips = new Set();
+let selectedSuggIdx = -1;
+
+window.addEventListener('DOMContentLoaded', () => {
+    loadPlaces();
+    setupAllAutocomplete();
+    document.getElementById('yearReviewSelect').addEventListener('change', renderYearReview);
+    document.getElementById('addDateBtn').addEventListener('click', addDateField);
+    document.getElementById('cancelBtn').addEventListener('click', resetForm);
+    document.getElementById('placePhotos').addEventListener('change', handlePhotoUpload);
+    document.getElementById('placeForm').addEventListener('submit', handleSubmit);
+    document.getElementById('searchInput').addEventListener('input', renderCurrentView);
+});
+
+// ---- NAVIGATION ----
+function setView(view) {
+    currentView = view;
+    ['list','map','stats','detail'].forEach(v => {
+        const el = document.getElementById(v + 'View');
+        if (el) el.classList.add('hidden');
+        const btn = document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1));
+        if (btn) { btn.classList.remove('active'); btn.style.color = 'white'; btn.style.background = 'rgba(255,255,255,0.2)'; }
+    });
+    document.getElementById(view + 'View').classList.remove('hidden');
+    const activeBtn = document.getElementById('nav' + view.charAt(0).toUpperCase() + view.slice(1));
+    if (activeBtn) { activeBtn.classList.add('active'); activeBtn.style.background = 'white'; activeBtn.style.color = '#9AA581'; }
+    document.getElementById('filterBar').classList.toggle('hidden', view === 'stats' || view === 'detail');
+    document.getElementById('placeForm').classList.add('hidden');
+    renderCurrentView();
+}
+
+function renderCurrentView() {
+    if (currentView === 'list') renderList();
+    else if (currentView === 'map') renderMap();
+    else if (currentView === 'stats') renderStats();
+}
+
+function showForm() {
+    ['listView','mapView','statsView','detailView'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+    document.getElementById('filterBar').classList.add('hidden');
+    document.getElementById('placeForm').classList.remove('hidden');
+    if (!editingId) { document.getElementById('formTitle').textContent = 'Add New Place'; }
+}
+
+// ---- STAR RATING ----
+function setRating(n) {
+    if (lastClickedStar === n) {
+        starClickCount++;
+        if (starClickCount === 2) { updateMainStars(n - 0.5); document.getElementById('placeRating').value = n - 0.5; document.getElementById('ratingValue').textContent = n - 0.5; }
+        else { starClickCount = 1; updateMainStars(n); document.getElementById('placeRating').value = n; document.getElementById('ratingValue').textContent = n; }
+    } else {
+        lastClickedStar = n; starClickCount = 1;
+        updateMainStars(n); document.getElementById('placeRating').value = n; document.getElementById('ratingValue').textContent = n;
+    }
+}
+function updateMainStars(rating) {
+    document.querySelectorAll('.star-btn').forEach((s, i) => {
+        const full = Math.floor(rating), half = rating % 1 !== 0;
+        if (i < full) { s.textContent = '★'; s.style.color = '#9AA581'; }
+        else if (i === full && half) { s.textContent = '½'; s.style.color = '#9AA581'; }
+        else { s.textContent = '★'; s.style.color = '#d1d5db'; }
+    });
+}
+function getStarDisplay(r) {
+    const f = Math.floor(r), h = r % 1 !== 0, e = 5 - f - (h ? 1 : 0);
+    return '<span style="color:#9AA581">' + '★'.repeat(f) + (h ? '½' : '') + '</span><span style="color:#d1d5db">' + '★'.repeat(e) + '</span>';
+}
+function getStarText(r) {
+    const f = Math.floor(r), h = r % 1 !== 0, e = 5 - f - (h ? 1 : 0);
+    return '★'.repeat(f) + (h ? '½' : '') + '☆'.repeat(e);
+}
+
+// ---- ZEPEDA ----
+function selectZepeda(v) {
+    const current = parseInt(document.getElementById('placeZepeda').value);
+    const newVal = current === v ? 0 : v; // click same button again to deselect
+    document.getElementById('placeZepeda').value = newVal;
+    document.querySelectorAll('.zepeda-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.value) === newVal);
+    });
+}
+
+// ---- SUB RATINGS ----
+function addSubRating(cat = '', rating = 5) {
+    const id = subRatingCounter++;
+    const div = document.createElement('div');
+    div.className = 'border border-gray-200 rounded-lg p-3 bg-white';
+    div.innerHTML = `
+        <div class="flex justify-between mb-2">
+            <input type="text" value="${esc(cat)}" placeholder="Category (e.g., Food)" class="sub-rating-category flex-1 px-2 py-1 border border-gray-300 rounded text-sm mr-2"/>
+            <button type="button" onclick="this.closest('.border').remove()" class="text-red-500 text-sm">Remove</button>
+        </div>
+        <div class="flex gap-1 justify-center" data-sub-id="${id}">
+            ${[1,2,3,4,5].map(n => `<span class="sub-star" style="color:#859EAC;" onclick="setSubRating(this,${n},${id})">★</span>`).join('')}
+        </div>
+        <input type="hidden" class="sub-rating-value" value="${rating}">`;
+    document.getElementById('subRatingsContainer').appendChild(div);
+    subRatingClicks[id] = { last: 0, count: 0 };
+    updateSubStars(div.querySelectorAll('.sub-star'), rating);
+}
+function setSubRating(el, n, id) {
+    const div = el.closest('.border');
+    const stars = div.querySelectorAll('.sub-star');
+    const input = div.querySelector('.sub-rating-value');
+    const d = subRatingClicks[id] || { last: 0, count: 0 };
+    if (d.last === n) {
+        d.count++;
+        if (d.count === 2) { input.value = n - 0.5; updateSubStars(stars, n - 0.5); }
+        else { d.count = 1; input.value = n; updateSubStars(stars, n); }
+    } else {
+        d.last = n; d.count = 1; input.value = n; updateSubStars(stars, n);
+    }
+    subRatingClicks[id] = d;
+}
+function updateSubStars(stars, r) {
+    const f = Math.floor(r), h = r % 1 !== 0;
+    stars.forEach((s, i) => {
+        if (i < f) { s.textContent = '★'; s.style.color = '#859EAC'; }
+        else if (i === f && h) { s.textContent = '½'; s.style.color = '#859EAC'; }
+        else { s.textContent = '★'; s.style.color = '#d1d5db'; }
+    });
+}
+function getSubRatings() {
+    const obj = {};
+    document.querySelectorAll('#subRatingsContainer .border').forEach(div => {
+        const cat = div.querySelector('.sub-rating-category').value.trim();
+        const val = parseFloat(div.querySelector('.sub-rating-value').value);
+        if (cat) obj[cat] = val;
+    });
+    return obj;
+}
+
+// ---- DATES ----
+function addDateField(val = '') {
+    const div = document.createElement('div');
+    div.className = 'flex gap-2';
+    div.innerHTML = `<input type="date" value="${val}" class="visit-date flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"/><button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-sm px-2">Remove</button>`;
+    document.getElementById('datesContainer').appendChild(div);
+}
+function getVisitDates() {
+    return Array.from(document.querySelectorAll('.visit-date')).map(i => i.value).filter(v => v);
+}
+
+// ---- PHOTOS ----
+function handlePhotoUpload(e) {
+    Array.from(e.target.files).forEach(file => {
+        const r = new FileReader();
+        r.onload = ev => { currentPhotos.push(ev.target.result); renderPhotoPreview(); };
+        r.readAsDataURL(file);
+    });
+}
+function renderPhotoPreview() {
+    const c = document.getElementById('photoPreviewContainer');
+    c.innerHTML = '';
+    currentPhotos.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'relative';
+        div.innerHTML = `<img src="${p}" class="photo-preview" onclick="openPhoto('${p}')"><button type="button" onclick="currentPhotos.splice(${i},1);renderPhotoPreview()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">x</button>`;
+        c.appendChild(div);
+    });
+}
+function openPhoto(src) { document.getElementById('modalImage').src = src; document.getElementById('photoModal').classList.add('active'); }
+
+// ---- FORM SUBMIT ----
+async function handleSubmit(e) {
+    e.preventDefault();
+    const dates = getVisitDates();
+    const city = document.getElementById('placeCity').value.trim();
+    const state = document.getElementById('placeState').value.trim();
+    const country = document.getElementById('placeCountry').value.trim();
+    const typeTags = document.getElementById('placeTypeTags').value.split(',').map(t=>t.trim()).filter(t=>t);
+    const peopleTags = document.getElementById('placePeopleTags').value.split(',').map(t=>t.trim()).filter(t=>t);
+    const place = {
+        id: editingId || Date.now().toString(),
+        name: document.getElementById('placeName').value.trim(),
+        city, state, country,
+        location: state ? `${city}, ${state}, ${country}` : `${city}, ${country}`,
+        trip: document.getElementById('placeTrip').value.trim(),
+        mapLink: document.getElementById('placeMapLink').value.trim(),
+        dates: dates.sort(),
+        rating: parseFloat(document.getElementById('placeRating').value),
+        zepedaStars: parseInt(document.getElementById('placeZepeda').value),
+        subRatings: getSubRatings(),
+        typeTags, peopleTags,
+        tags: [...typeTags, ...peopleTags],
+        notes: document.getElementById('placeNotes').value.trim(),
+        photos: currentPhotos,
+        createdAt: editingId ? (places.find(p=>p.id===editingId)?.createdAt) : new Date().toISOString()
+    };
+    await savePlace(place);
+    await loadPlaces();
+    const wasEditing = !!editingId;
+    resetForm();
+    setView('list');
+    showToast(wasEditing ? '✓ Place updated!' : '✓ Place saved!');
+}
+
+// ---- STORAGE (localStorage with window.storage fallback) ----
+const Store = {
+    async get(key) {
+        if (window.storage) {
+            try { const r = await window.storage.get(key); return r ? r.value : null; } catch {}
+        }
+        return localStorage.getItem(key);
+    },
+    async set(key, value) {
+        if (window.storage) {
+            try { await window.storage.set(key, value); return true; } catch {}
+        }
+        try { localStorage.setItem(key, value); return true; }
+        catch(e) { console.error('Storage error', e); return false; }
+    },
+    async delete(key) {
+        if (window.storage) {
+            try { await window.storage.delete(key); } catch {}
+        }
+        localStorage.removeItem(key);
+    },
+    async list(prefix) {
+        if (window.storage) {
+            try { const r = await window.storage.list(prefix); return r?.keys || []; } catch {}
+        }
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(prefix)) keys.push(k);
+        }
+        return keys;
+    }
+};
+
+async function loadPlaces() {
+    try {
+        const keys = await Store.list('place:');
+        if (keys.length) {
+            const loaded = await Promise.all(keys.map(async k => {
+                try { const d = await Store.get(k); return d ? JSON.parse(d) : null; } catch { return null; }
+            }));
+            places = loaded.filter(p => p !== null);
+        } else { places = []; }
+    } catch { places = []; }
+    updateAllSets();
+    updateFilters();
+    renderCurrentView();
+}
+
+async function savePlace(place) {
+    await Store.set('place:' + place.id, JSON.stringify(place));
+}
+
+async function deletePlace(id) {
+    if (!confirm('Delete this place?')) return;
+    await Store.delete('place:' + id);
+    await loadPlaces();
+}
+
+// ---- AUTOCOMPLETE ----
+function updateAllSets() {
+    [allTypeTags, allPeopleTags, allCities, allStates, allCountries, allTrips].forEach(s => s.clear());
+    places.forEach(p => {
+        (p.typeTags||[]).forEach(t => allTypeTags.add(t));
+        (p.peopleTags||[]).forEach(t => allPeopleTags.add(t));
+        if (p.city) allCities.add(p.city);
+        if (p.state) allStates.add(p.state);
+        if (p.country) allCountries.add(p.country);
+        if (p.trip) allTrips.add(p.trip);
+    });
+}
+function setupAllAutocomplete() {
+    setupLocationAC('placeCity', 'citySuggestions', allCities);
+    setupLocationAC('placeState', 'stateSuggestions', allStates);
+    setupLocationAC('placeCountry', 'countrySuggestions', allCountries);
+    setupLocationAC('placeTrip', 'tripSuggestions', allTrips);
+    setupTagAC('placeTypeTags', 'typeTagSuggestions', allTypeTags);
+    setupTagAC('placePeopleTags', 'peopleTagSuggestions', allPeopleTags);
+}
+function setupLocationAC(inputId, sugId, set) {
+    const input = document.getElementById(inputId);
+    const sug = document.getElementById(sugId);
+    if (!input || !sug) return;
+    input.addEventListener('input', () => {
+        const v = input.value.trim();
+        if (!v) { sug.classList.remove('active'); return; }
+        const matches = Array.from(set).filter(x => x.toLowerCase().includes(v.toLowerCase()) && x.toLowerCase() !== v.toLowerCase()).slice(0, 6);
+        if (!matches.length) { sug.classList.remove('active'); return; }
+        sug.innerHTML = matches.map(m => `<div class="tag-suggestion-item" onmousedown="event.preventDefault();document.getElementById('${inputId}').value='${esc(m)}';document.getElementById('${sugId}').classList.remove('active')">${esc(m)}</div>`).join('');
+        sug.classList.add('active');
+    });
+    input.addEventListener('blur', () => setTimeout(() => sug.classList.remove('active'), 200));
+    input.addEventListener('keydown', e => handleACKeydown(e, sug, input, false));
+}
+function setupTagAC(inputId, sugId, set) {
+    const input = document.getElementById(inputId);
+    const sug = document.getElementById(sugId);
+    if (!input || !sug) return;
+    input.addEventListener('input', () => {
+        const v = input.value;
+        const lastComma = v.lastIndexOf(',');
+        const current = lastComma >= 0 ? v.substring(lastComma + 1).trim() : v.trim();
+        if (!current) { sug.classList.remove('active'); return; }
+        const matches = Array.from(set).filter(x => x.toLowerCase().includes(current.toLowerCase()) && x.toLowerCase() !== current.toLowerCase()).slice(0, 6);
+        if (!matches.length) { sug.classList.remove('active'); return; }
+        sug.innerHTML = matches.map(m => {
+            const newVal = lastComma >= 0 ? v.substring(0, lastComma + 1) + ' ' + m + ', ' : m + ', ';
+            return `<div class="tag-suggestion-item" onmousedown="event.preventDefault();document.getElementById('${inputId}').value=${JSON.stringify(newVal)};document.getElementById('${sugId}').classList.remove('active')">${esc(m)}</div>`;
+        }).join('');
+        sug.classList.add('active');
+    });
+    input.addEventListener('blur', () => setTimeout(() => sug.classList.remove('active'), 200));
+    input.addEventListener('keydown', e => handleACKeydown(e, sug, input, true));
+}
+function handleACKeydown(e, sug, input, isTag) {
+    const items = sug.querySelectorAll('.tag-suggestion-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); selectedSuggIdx = Math.min(selectedSuggIdx + 1, items.length - 1); items.forEach((it, i) => it.classList.toggle('selected', i === selectedSuggIdx)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); selectedSuggIdx = Math.max(selectedSuggIdx - 1, 0); items.forEach((it, i) => it.classList.toggle('selected', i === selectedSuggIdx)); }
+    else if (e.key === 'Enter' && selectedSuggIdx >= 0) { e.preventDefault(); items[selectedSuggIdx].dispatchEvent(new MouseEvent('mousedown')); selectedSuggIdx = -1; }
+    else if (e.key === 'Escape') { sug.classList.remove('active'); selectedSuggIdx = -1; }
+}
+
+// ---- MULTI-SORT SYSTEM ----
+const SORT_OPTIONS = [
+    { value: 'date-desc', label: 'Newest First' },
+    { value: 'date-asc',  label: 'Oldest First' },
+    { value: 'rating-desc', label: 'Top Rated' },
+    { value: 'rating-asc',  label: 'Lowest Rated' },
+    { value: 'zepeda-desc', label: 'Most Zepeda' },
+    { value: 'name-asc',  label: 'Name A-Z' },
+    { value: 'name-desc', label: 'Name Z-A' },
+    { value: 'visits-desc', label: 'Most Visited' },
+    { value: 'year-desc', label: 'Year (Newest)' },
+    { value: 'year-asc',  label: 'Year (Oldest)' },
+    { value: 'country-asc', label: 'Country A-Z' },
+    { value: 'city-asc',  label: 'City A-Z' },
+    { value: 'trip-asc',  label: 'Trip A-Z' },
+];
+let activeSorts = [];
+let activeFilters = [];
+
+function toggleSortPanel() {
+    const panel = document.getElementById('sortPanel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) renderSortPanel();
+}
+
+function renderSortPanel() {
+    // Active chips (ordered, removable)
+    const chipsEl = document.getElementById('sortChips');
+    if (activeSorts.length === 0) {
+        chipsEl.innerHTML = '<span class="text-xs text-gray-400 italic">No sorts active — pick from below</span>';
+    } else {
+        chipsEl.innerHTML = activeSorts.map((v, i) => {
+            const opt = SORT_OPTIONS.find(o => o.value === v);
+            return `<span class="sort-chip active">
+                ${i > 0 ? `<span onclick="moveSortUp(${i})" title="Move up" style="opacity:0.6;cursor:pointer;">&#8593;</span>` : ''}
+                ${opt.label}
+                <span class="chip-remove" onclick="removeSort('${v}')">×</span>
+            </span>`;
+        }).join('');
+    }
+
+    // Available options (not yet active)
+    const available = SORT_OPTIONS.filter(o => !activeSorts.includes(o.value));
+    const optEl = document.getElementById('sortOptions');
+    if (available.length === 0) {
+        optEl.innerHTML = '<span class="text-xs text-gray-400 italic">All sorts active</span>';
+    } else {
+        optEl.innerHTML = available.map(o =>
+            `<span class="sort-option" onclick="addSort('${o.value}')">${o.label} +</span>`
+        ).join('');
+    }
+
+    updateActiveSortDisplay();
+}
+
+function addSort(value) {
+    if (!activeSorts.includes(value)) {
+        activeSorts.push(value);
+        renderSortPanel();
+        renderCurrentView();
+    }
+}
+function removeSort(value) {
+    activeSorts = activeSorts.filter(v => v !== value);
+    renderSortPanel();
+    renderCurrentView();
+}
+function moveSortUp(index) {
+    if (index <= 0) return;
+    [activeSorts[index - 1], activeSorts[index]] = [activeSorts[index], activeSorts[index - 1]];
+    renderSortPanel();
+    renderCurrentView();
+}
+function updateActiveSortDisplay() {
+    const el = document.getElementById('activeSortDisplay');
+    const btn = document.getElementById('sortToggleBtn');
+    if (activeSorts.length === 0) {
+        el.classList.add('hidden');
+        btn.textContent = 'Sort ▾';
+    } else {
+        el.classList.remove('hidden');
+        el.innerHTML = activeSorts.map(v => {
+            const opt = SORT_OPTIONS.find(o => o.value === v);
+            return `<span class="sort-chip active" style="font-size:0.7rem;padding:2px 8px;">${opt.label}<span class="chip-remove" onclick="removeSort('${v}')">×</span></span>`;
+        }).join('');
+        btn.textContent = `Sort (${activeSorts.length}) ▾`;
+    }
+}
+
+function getFirstDate(p, last = true) {
+    const d = p.dates && p.dates.length ? p.dates : (p.date ? [p.date] : []);
+    if (!d.length) return new Date(0);
+    return new Date(last ? d[d.length - 1] : d[0]);
+}
+// ---- FILTER CHIP SYSTEM ----
+function toggleFilterPanel() {
+    const panel = document.getElementById('filterPanel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) renderFilterPanel();
+}
+
+function renderFilterPanel() {
+    // Trips
+    const trips = [...new Set(places.filter(p => !p.isWishlist && p.trip).map(p => p.trip))].sort();
+    document.getElementById('filterTripOptions').innerHTML = trips.length
+        ? trips.map(t => {
+            const active = activeFilters.some(f => f.type === 'trip' && f.value === t);
+            return `<span class="filter-chip${active?' active':''}" data-type="trip" data-value="${esc(t)}" data-label="Trip: ${esc(t)}" onclick="toggleFilterChip(this)">${esc(t)}</span>`;
+          }).join('')
+        : '<span class="text-xs text-gray-400 italic">No trips recorded yet</span>';
+
+    // Tags (type tags)
+    const typeTags = [...new Set(places.flatMap(p => p.typeTags||[]))].sort();
+    document.getElementById('filterTagOptions').innerHTML = typeTags.length
+        ? typeTags.map(t => {
+            const active = activeFilters.some(f => f.type === 'typeTag' && f.value === t);
+            return `<span class="filter-chip${active?' active':''}" data-type="typeTag" data-value="${esc(t)}" data-label="Type: ${esc(t)}" onclick="toggleFilterChip(this)">${esc(t)}</span>`;
+          }).join('')
+        : '<span class="text-xs text-gray-400 italic">No place types yet</span>';
+
+    // People tags
+    const peopleTags = [...new Set(places.flatMap(p => p.peopleTags||[]))].sort();
+    document.getElementById('filterPeopleOptions').innerHTML = peopleTags.length
+        ? peopleTags.map(t => {
+            const active = activeFilters.some(f => f.type === 'people' && f.value === t);
+            return `<span class="filter-chip${active?' active':''}" data-type="people" data-value="${esc(t)}" data-label="With: ${esc(t)}" onclick="toggleFilterChip(this)">${esc(t)}</span>`;
+          }).join('')
+        : '<span class="text-xs text-gray-400 italic">No people tags yet</span>';
+
+    // Rating chips — sync active state
+    document.querySelectorAll('#filterRatingOptions .filter-chip').forEach(chip => {
+        const active = activeFilters.some(f => f.type === 'rating' && f.value === chip.dataset.value);
+        chip.classList.toggle('active', active);
+        chip.dataset.label = 'Rating: ' + chip.dataset.value + '+';
+    });
+}
+
+function toggleFilterChip(el) {
+    const type = el.dataset.type;
+    const value = el.dataset.value;
+    const label = el.dataset.label || (type + ': ' + value);
+    const idx = activeFilters.findIndex(f => f.type === type && f.value === value);
+    if (idx >= 0) {
+        activeFilters.splice(idx, 1);
+        el.classList.remove('active');
+    } else {
+        // For rating, only allow one at a time
+        if (type === 'rating') activeFilters = activeFilters.filter(f => f.type !== 'rating');
+        activeFilters.push({ type, value, label });
+        el.classList.add('active');
+    }
+    updateActiveFilterDisplay();
+    renderCurrentView();
+}
+
+function removeFilter(type, value) {
+    activeFilters = activeFilters.filter(f => !(f.type === type && f.value === value));
+    updateActiveFilterDisplay();
+    renderFilterPanel();
+    renderCurrentView();
+}
+
+function clearAllFilters() {
+    activeFilters = [];
+    updateActiveFilterDisplay();
+    renderFilterPanel();
+    renderCurrentView();
+}
+
+function updateActiveFilterDisplay() {
+    const el = document.getElementById('activeFilterDisplay');
+    const btn = document.getElementById('filterToggleBtn');
+    if (!activeFilters.length) {
+        el.classList.add('hidden');
+        btn.textContent = 'Filter ▾';
+        btn.style.color = '';
+    } else {
+        el.classList.remove('hidden');
+        el.innerHTML = activeFilters.map(f =>
+            `<span class="filter-chip active" style="font-size:0.7rem;padding:2px 8px;">${esc(f.label)}<span class="chip-remove" onclick="removeFilter('${f.type}','${esc(f.value)}')"> ×</span></span>`
+        ).join('');
+        btn.textContent = `Filter (${activeFilters.length}) ▾`;
+        btn.style.color = '#859EAC';
+    }
+}
+
+function updateFilters() {
+    const years = [...new Set(places.flatMap(p => (p.dates||[p.date]).filter(Boolean).map(d => new Date(d).getFullYear())))].filter(Boolean).sort((a,b)=>b-a);
+    const ys = document.getElementById('yearReviewSelect');
+    ys.innerHTML = '<option value="">Year in Review...</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+function getFilteredSorted(wishlistOnly = false) {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+
+    // Extract active filter values by type
+    const tripFilters = activeFilters.filter(f => f.type === 'trip').map(f => f.value);
+    const typeTagFilters = activeFilters.filter(f => f.type === 'typeTag').map(f => f.value);
+    const peopleFilters = activeFilters.filter(f => f.type === 'people').map(f => f.value);
+    const ratingFilter = activeFilters.find(f => f.type === 'rating');
+    const minRating = ratingFilter ? parseFloat(ratingFilter.value) : null;
+
+    let result = places.filter(p => {
+        if (wishlistOnly) return p.isWishlist;
+        if (p.isWishlist) return false;
+        if (search && !p.name.toLowerCase().includes(search) && !(p.location||'').toLowerCase().includes(search) && !(p.notes||'').toLowerCase().includes(search) && !(p.trip||'').toLowerCase().includes(search)) return false;
+        if (tripFilters.length && !tripFilters.includes(p.trip)) return false;
+        if (typeTagFilters.length && !typeTagFilters.every(t => (p.typeTags||[]).includes(t))) return false;
+        if (peopleFilters.length && !peopleFilters.every(t => (p.peopleTags||[]).includes(t))) return false;
+        if (minRating !== null && p.rating < minRating) return false;
+        return true;
+    });
+
+    if (activeSorts.length === 0) {
+        result = applyOneSortKey(result, 'date-desc');
+    } else {
+        [...activeSorts].reverse().forEach(key => { result = applyOneSortKey(result, key); });
+    }
+    return result;
+}
+
+// ---- RENDER LIST ----
+function renderList() {
+    const filtered = getFilteredSorted();
+    const visitedCount = places.filter(p => !p.isWishlist).length;
+    document.getElementById('placeCount').textContent = `${visitedCount} place${visitedCount !== 1 ? 's' : ''} visited`;
+    const el = document.getElementById('placesList');
+    if (!filtered.length) { el.innerHTML = '<div class="text-center py-10 text-gray-400"><p class="font-medium">No places found</p><p class="text-sm mt-1">Try adjusting your filters</p></div>'; return; }
+
+    const hierarchy = {};
+    filtered.forEach(p => {
+        const co = p.country || 'Unknown'; const st = p.state || ''; const ci = p.city || 'Unknown';
+        if (!hierarchy[co]) hierarchy[co] = {};
+        const stKey = st || '_none';
+        if (!hierarchy[co][stKey]) hierarchy[co][stKey] = {};
+        if (!hierarchy[co][stKey][ci]) hierarchy[co][stKey][ci] = [];
+        hierarchy[co][stKey][ci].push(p);
+    });
+
+    let html = '';
+    Object.keys(hierarchy).sort().forEach(co => {
+        const coId = 'co-' + co.replace(/\W/g, '-');
+        html += `<div class="mb-3">
+            <div class="section-header flex justify-between items-center p-3 rounded-lg font-bold text-base" style="background:#e8ebe4;" onclick="toggleSection('${coId}')">
+                <span style="color:#9AA581;">${esc(co)}</span>
+                <span id="${coId}-arrow" class="collapse-arrow text-gray-500 text-sm">▼</span>
+            </div>
+            <div id="${coId}" class="mt-1 ml-2">`;
+        Object.keys(hierarchy[co]).sort().forEach(st => {
+            const cities = hierarchy[co][st];
+            if (st !== '_none') {
+                const stId = coId + '-' + st.replace(/\W/g, '-');
+                html += `<div class="mb-2">
+                    <div class="section-header flex justify-between items-center p-2 px-3 rounded-lg font-semibold text-sm" style="background:#e3eef3;" onclick="toggleSection('${stId}')">
+                        <span style="color:#859EAC;">${esc(st)}</span>
+                        <span id="${stId}-arrow" class="collapse-arrow text-gray-400 text-xs">▼</span>
+                    </div>
+                    <div id="${stId}" class="mt-1 ml-2">`;
+                Object.keys(cities).sort().forEach(ci => {
+                    const ciId = stId + '-' + ci.replace(/\W/g, '-');
+                    html += buildCitySection(ciId, ci, cities[ci]);
+                });
+                html += `</div></div>`;
+            } else {
+                Object.keys(cities).sort().forEach(ci => {
+                    const ciId = coId + '-' + ci.replace(/\W/g, '-');
+                    html += buildCitySection(ciId, ci, cities[ci]);
+                });
+            }
+        });
+        html += `</div></div>`;
+    });
+    el.innerHTML = html;
+}
+function buildCitySection(ciId, ci, placesArr) {
+    return `<div class="mb-2">
+        <div class="section-header flex justify-between items-center p-2 px-3 rounded-lg font-medium text-sm bg-gray-100" onclick="toggleSection('${ciId}')">
+            <span class="text-gray-700">${esc(ci)}</span>
+            <span id="${ciId}-arrow" class="collapse-arrow text-gray-400 text-xs">▼</span>
+        </div>
+        <div id="${ciId}" class="mt-1 ml-2 space-y-2">
+            ${placesArr.map(p => renderCard(p)).join('')}
+        </div>
+    </div>`;
+}
+function renderCard(p) {
+    const dates = p.dates && p.dates.filter(Boolean).length ? p.dates.filter(Boolean) : (p.date ? [p.date] : []);
+    const latestDate = dates.length ? new Date(dates[dates.length-1]).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
+    const visitsLabel = dates.length > 1 ? `${dates.length} visits` : latestDate;
+    const thumb = (p.photos||[])[0];
+    return `<div class="bg-white border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onclick='openDetail(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+        <div class="flex items-stretch">
+            ${thumb
+                ? `<div class="w-20 flex-shrink-0"><img src="${thumb}" class="w-full h-full object-cover" style="min-height:72px;"></div>`
+                : `<div class="w-2 flex-shrink-0 rounded-l-lg" style="background:#9AA581;"></div>`
+            }
+            <div class="flex-1 p-3 min-w-0">
+                <div class="flex justify-between items-start gap-2">
+                    <div class="font-bold text-gray-800 text-sm leading-tight truncate">${esc(p.name)}</div>
+                    <div class="flex-shrink-0 text-xs font-bold" style="color:#9AA581;">${getStarText(p.rating)}</div>
+                </div>
+                <div class="text-xs text-gray-400 mt-0.5">${visitsLabel ? visitsLabel : '<span class="italic">No date</span>'}</div>
+                <div class="flex flex-wrap gap-1 mt-1.5">
+                    ${p.trip ? `<span class="px-1.5 py-0.5 rounded-full text-xs font-medium" style="background:#f0f4ec;color:#9AA581;">${esc(p.trip)}</span>` : ''}
+                    ${(p.typeTags||[]).slice(0,2).map(t => `<span class="px-1.5 py-0.5 rounded-full text-xs" style="background:#e8ebe4;color:#9AA581;">${esc(t)}</span>`).join('')}
+                    ${(p.peopleTags||[]).slice(0,2).map(t => `<span class="px-1.5 py-0.5 rounded-full text-xs" style="background:#e3eef3;color:#859EAC;">${esc(t)}</span>`).join('')}
+                    ${p.zepedaStars > 0 ? `<span class="px-1.5 py-0.5 rounded-full text-xs font-bold" style="background:#e3eef3;color:#859EAC;">${'!'.repeat(p.zepedaStars)}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ---- DETAIL VIEW ----
+let detailPlaceId = null;
+
+function openDetail(p) {
+    detailPlaceId = p.id;
+    const prevView = currentView;
+
+    // Hide all views, show detail
+    ['listView','mapView','statsView','detailView'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById('filterBar').classList.add('hidden');
+    document.getElementById('detailView').classList.remove('hidden');
+
+    // Header — photo or gradient
+    const wrap = document.getElementById('detailHeaderWrap');
+    const photos = p.photos || [];
+    if (photos.length) {
+        wrap.innerHTML = `
+            <img src="${photos[0]}" class="detail-photo-header" onclick="openPhoto('${photos[0]}')" title="Tap to enlarge">
+            <button class="detail-back-btn" onclick="closeDetail('${prevView}')">&#8592; Back</button>
+            ${photos.length > 1 ? `<div class="absolute bottom-2 right-3 text-white text-xs bg-black bg-opacity-40 rounded-full px-2 py-0.5">${photos.length} photos</div>` : ''}
+        `;
+    } else {
+        wrap.innerHTML = `
+            <div class="detail-photo-placeholder"></div>
+            <button class="detail-back-btn" onclick="closeDetail('${prevView}')">&#8592; Back</button>
+        `;
+    }
+
+    // Body
+    const dates = (p.dates||[p.date]).filter(Boolean);
+    const dateList = dates.length
+        ? dates.map(d => new Date(d).toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric'})).join('<br>')
+        : '<span class="text-gray-400 italic">No dates recorded</span>';
+
+    const subRatingsHtml = Object.keys(p.subRatings||{}).length
+        ? Object.entries(p.subRatings).map(([cat, val]) => `
+            <div class="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+                <span class="text-sm text-gray-500">${esc(cat)}</span>
+                <span class="text-sm font-medium" style="color:#859EAC;">${getStarText(val)} <span class="text-gray-400 text-xs">(${val})</span></span>
+            </div>`).join('')
+        : null;
+
+    const allPhotosHtml = photos.length > 1
+        ? `<div class="flex gap-2 flex-wrap">${photos.map(ph => `<img src="${ph}" class="photo-preview" onclick="openPhoto('${ph}')">`).join('')}</div>`
+        : null;
+
+    document.getElementById('detailBody').innerHTML = `
+        <!-- Name + location -->
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 leading-tight">${esc(p.name)}</h2>
+            <p class="text-gray-500 text-sm mt-0.5">${esc(p.location)}</p>
+            ${p.mapLink ? `<a href="${esc(p.mapLink)}" target="_blank" class="text-sm font-medium hover:underline mt-1 inline-block" style="color:#9AA581;">View on Apple Maps ↗</a>` : ''}
+        </div>
+
+        <!-- Ratings row -->
+        <div class="bg-gray-50 rounded-xl p-3 flex gap-4 items-center">
+            <div class="text-center">
+                <div class="text-2xl" style="color:#9AA581;">${getStarText(p.rating)}</div>
+                <div class="text-xs text-gray-400 mt-0.5">Rating (${p.rating}/5)</div>
+            </div>
+            ${p.zepedaStars > 0 ? `
+            <div class="text-center border-l border-gray-200 pl-4">
+                <div class="text-2xl font-bold" style="color:#859EAC;">${'!'.repeat(p.zepedaStars)}</div>
+                <div class="text-xs text-gray-400 mt-0.5">Zepeda Stars</div>
+            </div>` : ''}
+        </div>
+
+        ${subRatingsHtml ? `
+        <!-- Sub-ratings -->
+        <div class="bg-white border border-gray-100 rounded-xl p-3">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Sub-Ratings</div>
+            ${subRatingsHtml}
+        </div>` : ''}
+
+        <!-- Dates -->
+        <div class="bg-white border border-gray-100 rounded-xl p-3">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                ${dates.length > 1 ? `${dates.length} Visits` : 'Visit Date'}
+            </div>
+            <div class="text-sm text-gray-700 leading-relaxed">${dateList}</div>
+        </div>
+
+        ${p.trip ? `
+        <!-- Trip -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Trip</span>
+            <span class="px-3 py-1 rounded-full text-sm font-medium" style="background:#f0f4ec;color:#9AA581;">${esc(p.trip)}</span>
+        </div>` : ''}
+
+        ${(p.typeTags||[]).length || (p.peopleTags||[]).length ? `
+        <!-- Tags -->
+        <div class="space-y-2">
+            ${(p.typeTags||[]).length ? `
+            <div>
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Type of Place</div>
+                <div class="flex flex-wrap gap-1">${(p.typeTags||[]).map(t => `<span class="px-2 py-1 rounded-full text-xs font-medium" style="background:#e8ebe4;color:#9AA581;">${esc(t)}</span>`).join('')}</div>
+            </div>` : ''}
+            ${(p.peopleTags||[]).length ? `
+            <div>
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Visited With</div>
+                <div class="flex flex-wrap gap-1">${(p.peopleTags||[]).map(t => `<span class="px-2 py-1 rounded-full text-xs font-medium" style="background:#e3eef3;color:#859EAC;">${esc(t)}</span>`).join('')}</div>
+            </div>` : ''}
+        </div>` : ''}
+
+        ${p.notes ? `
+        <!-- Notes -->
+        <div class="bg-white border border-gray-100 rounded-xl p-3">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Notes</div>
+            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">${esc(p.notes)}</p>
+        </div>` : ''}
+
+        ${allPhotosHtml ? `
+        <!-- All Photos -->
+        <div>
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">All Photos</div>
+            ${allPhotosHtml}
+        </div>` : ''}
+    `;
+}
+
+function closeDetail(prevView) {
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('filterBar').classList.remove('hidden');
+    setView(prevView || 'list');
+}
+
+function detailEdit() {
+    const p = places.find(x => x.id === detailPlaceId);
+    if (p) { document.getElementById('detailView').classList.add('hidden'); editPlace(p); }
+}
+
+function detailAddVisit() {
+    const p = places.find(x => x.id === detailPlaceId);
+    if (!p) return;
+    // Pre-fill form but add a new empty date field for the new visit
+    editPlace(p);
+    // After editPlace opens the form, add a fresh date at the top
+    setTimeout(() => {
+        const container = document.getElementById('datesContainer');
+        const div = document.createElement('div');
+        div.className = 'flex gap-2';
+        div.innerHTML = `<input type="date" value="" class="visit-date flex-1 px-3 py-2 border-2 rounded-lg text-sm" style="border-color:#859EAC;"/><button type="button" onclick="this.parentElement.remove()" class="text-red-500 text-sm px-2">Remove</button>`;
+        container.insertBefore(div, container.firstChild);
+        div.querySelector('input').focus();
+    }, 50);
+}
+function toggleSection(id) {
+    const el = document.getElementById(id), arrow = document.getElementById(id + '-arrow');
+    el.classList.toggle('hidden'); arrow.classList.toggle('collapsed');
+}
+
+// ---- MAP VIEW ----
+function renderMap() {
+    const withLinks = places.filter(p => p.mapLink);
+    const el = document.getElementById('mapContent');
+    if (!withLinks.length) { el.innerHTML = '<div class="text-center py-10 text-gray-400"><p class="font-medium">No map links yet</p><p class="text-sm mt-1">Add Apple Maps links to your places</p></div>'; return; }
+    el.innerHTML = withLinks.map(p => `<div class="border border-gray-200 rounded-lg p-3 mb-3 flex justify-between items-center">
+        <div>
+            <div class="font-bold text-sm text-gray-800">${esc(p.name)}</div>
+            <div class="text-xs text-gray-500">${esc(p.location)}</div>
+            <div class="text-sm mt-1" style="color:#9AA581;">${getStarText(p.rating)}</div>
+        </div>
+        <a href="${esc(p.mapLink)}" target="_blank" class="px-3 py-2 text-white rounded-lg text-xs font-semibold" style="background:#9AA581;">Open Map</a>
+    </div>`).join('');
+}
+
+
+// ---- STATS VIEW ----
+function renderStats() {
+    const visited = [...places];
+    if (!visited.length) { document.getElementById('statsContent').innerHTML = '<div class="text-center py-10 text-gray-400">No data yet. Start adding places!</div>'; return; }
+
+    const countries = new Set(visited.map(p => p.country)).size;
+    const states = new Set(visited.filter(p=>p.state).map(p => p.state)).size;
+    const cities = new Set(visited.map(p => p.city)).size;
+    const totalVisits = visited.reduce((s, p) => s + (p.dates?.length||1), 0);
+    const avgRating = (visited.reduce((s, p) => s + p.rating, 0) / visited.length).toFixed(1);
+
+    const mostVisited = [...visited].sort((a,b) => (b.dates?.length||1) - (a.dates?.length||1))[0];
+    const topRated = [...visited].sort((a,b) => b.rating - a.rating)[0];
+    const withPeople = visited.filter(p => p.peopleTags?.length);
+
+    // Avg rating by type tag
+    const byType = {};
+    visited.forEach(p => (p.typeTags||[]).forEach(t => { if (!byType[t]) byType[t] = []; byType[t].push(p.rating); }));
+    const typeRatings = Object.entries(byType).map(([t,rs]) => ({ tag: t, avg: (rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(1), count: rs.length })).sort((a,b)=>b.avg-a.avg);
+
+    // Avg rating by people tag
+    const byPeople = {};
+    visited.forEach(p => (p.peopleTags||[]).forEach(t => { if (!byPeople[t]) byPeople[t] = []; byPeople[t].push(p.rating); }));
+    const peopleRatings = Object.entries(byPeople).map(([t,rs]) => ({ tag: t, avg: (rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(1), count: rs.length })).sort((a,b)=>b.count-a.count);
+
+    // Trips
+    const byTrip = {};
+    visited.filter(p=>p.trip).forEach(p => { if (!byTrip[p.trip]) byTrip[p.trip] = 0; byTrip[p.trip]++; });
+
+    document.getElementById('statsContent').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="stat-card text-center"><div class="text-3xl font-bold" style="color:#9AA581;">${visited.length}</div><div class="text-xs text-gray-500 mt-1">Places Visited</div></div>
+            <div class="stat-card text-center"><div class="text-3xl font-bold" style="color:#859EAC;">${countries}</div><div class="text-xs text-gray-500 mt-1">Countries</div></div>
+            <div class="stat-card text-center"><div class="text-3xl font-bold" style="color:#9AA581;">${cities}</div><div class="text-xs text-gray-500 mt-1">Cities</div></div>
+            <div class="stat-card text-center"><div class="text-3xl font-bold" style="color:#859EAC;">${totalVisits}</div><div class="text-xs text-gray-500 mt-1">Total Visits</div></div>
+        </div>
+        <div class="stat-card mb-3">
+            <div class="text-sm font-bold text-gray-700 mb-2">Highlights</div>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between"><span class="text-gray-500">Average Rating</span><span class="font-semibold">${getStarText(parseFloat(avgRating))} (${avgRating})</span></div>
+                ${mostVisited ? `<div class="flex justify-between"><span class="text-gray-500">Most Revisited</span><span class="font-semibold">${esc(mostVisited.name)} (${mostVisited.dates?.length||1}x)</span></div>` : ''}
+                ${topRated ? `<div class="flex justify-between"><span class="text-gray-500">Top Rated</span><span class="font-semibold">${esc(topRated.name)}</span></div>` : ''}
+                
+            </div>
+        </div>
+        ${typeRatings.length ? `<div class="stat-card mb-3">
+            <div class="text-sm font-bold text-gray-700 mb-2">Avg Rating by Place Type</div>
+            <div class="space-y-1">
+                ${typeRatings.map(t => `<div class="flex justify-between items-center text-sm">
+                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:#e8ebe4;color:#9AA581;">${esc(t.tag)}</span>
+                    <span class="text-gray-600">${getStarText(parseFloat(t.avg))} <span class="text-gray-400 text-xs">(${t.count} places)</span></span>
+                </div>`).join('')}
+            </div>
+        </div>` : ''}
+        ${peopleRatings.length ? `<div class="stat-card mb-3">
+            <div class="text-sm font-bold text-gray-700 mb-2">Visits by Company</div>
+            <div class="space-y-1">
+                ${peopleRatings.map(t => `<div class="flex justify-between items-center text-sm">
+                    <span class="px-2 py-0.5 rounded-full text-xs" style="background:#e3eef3;color:#859EAC;">${esc(t.tag)}</span>
+                    <span class="text-gray-600">${t.count} visits &middot; avg ${getStarText(parseFloat(t.avg))}</span>
+                </div>`).join('')}
+            </div>
+        </div>` : ''}
+        ${Object.keys(byTrip).length ? `<div class="stat-card mb-3">
+            <div class="text-sm font-bold text-gray-700 mb-2">Trips</div>
+            <div class="space-y-1">
+                ${Object.entries(byTrip).sort((a,b)=>b[1]-a[1]).map(([trip, count]) => `
+                    <div class="flex justify-between text-sm">
+                        <span style="color:#9AA581;">${esc(trip)}</span>
+                        <span class="text-gray-500">${count} place${count!==1?'s':''}</span>
+                    </div>`).join('')}
+            </div>
+        </div>` : ''}`;
+}
+
+// ---- YEAR IN REVIEW ----
+function renderYearReview() {
+    const year = parseInt(document.getElementById('yearReviewSelect').value);
+    const el = document.getElementById('yearReviewContent');
+    if (!year) { el.innerHTML = ''; return; }
+
+    const yearPlaces = places.filter(p => (p.dates||[p.date]).some(d => new Date(d).getFullYear() === year));
+    if (!yearPlaces.length) { el.innerHTML = `<div class="stat-card text-center text-gray-400 py-6">No visits recorded in ${year}</div>`; return; }
+
+    const countries = new Set(yearPlaces.map(p=>p.country)).size;
+    const cities = new Set(yearPlaces.map(p=>p.city)).size;
+    const totalVisits = yearPlaces.reduce((s,p) => s + (p.dates||[p.date]).filter(d=>new Date(d).getFullYear()===year).length, 0);
+    const avgRating = (yearPlaces.reduce((s,p)=>s+p.rating,0)/yearPlaces.length).toFixed(1);
+    const topRated = [...yearPlaces].sort((a,b)=>b.rating-a.rating)[0];
+    const topZepeda = [...yearPlaces].filter(p=>p.zepedaStars>0).sort((a,b)=>b.zepedaStars-a.zepedaStars)[0];
+    const trips = [...new Set(yearPlaces.filter(p=>p.trip).map(p=>p.trip))];
+
+    el.innerHTML = `<div class="stat-card border-2 mt-2" style="border-color:#9AA581;">
+        <div class="text-center mb-4">
+            <div class="text-2xl font-bold" style="color:#9AA581;">${year} Year in Review</div>
+            <div class="text-sm text-gray-400 mt-1">Your travel highlights</div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+            <div><div class="text-2xl font-bold" style="color:#9AA581;">${yearPlaces.length}</div><div class="text-xs text-gray-500">Places</div></div>
+            <div><div class="text-2xl font-bold" style="color:#859EAC;">${countries}</div><div class="text-xs text-gray-500">Countries</div></div>
+            <div><div class="text-2xl font-bold" style="color:#9AA581;">${cities}</div><div class="text-xs text-gray-500">Cities</div></div>
+        </div>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-500">Total Visits</span><span class="font-semibold">${totalVisits}</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Average Rating</span><span>${getStarText(parseFloat(avgRating))} (${avgRating})</span></div>
+            ${topRated ? `<div class="flex justify-between"><span class="text-gray-500">Best Place</span><span class="font-semibold">${esc(topRated.name)}, ${esc(topRated.city)}</span></div>` : ''}
+            ${topZepeda ? `<div class="flex justify-between"><span class="text-gray-500">Top Zepeda Stars</span><span style="color:#9AA581;">${esc(topZepeda.name)} (${'!'.repeat(topZepeda.zepedaStars)})</span></div>` : ''}
+            ${trips.length ? `<div class="flex justify-between"><span class="text-gray-500">Trips Taken</span><span>${trips.map(t=>esc(t)).join(', ')}</span></div>` : ''}
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+            <div class="text-xs font-semibold text-gray-500 mb-2">ALL PLACES VISITED IN ${year}</div>
+            <div class="space-y-1">
+                ${[...yearPlaces].sort((a,b)=>b.rating-a.rating).map(p => `
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-700 font-medium">${esc(p.name)}</span>
+                        <span style="color:#9AA581;">${getStarText(p.rating)}</span>
+                    </div>`).join('')}
+            </div>
+        </div>
+    </div>`;
+}
+
+// ---- EXPORT PDF ----
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const visited = [...places];
+    const year = document.getElementById('yearReviewSelect').value;
+    const title = year ? `Travel Journal - ${year} Year in Review` : 'My Travel Journal';
+
+    let y = 20;
+    const lh = 7, margin = 15, pageW = 210, maxW = pageW - margin * 2;
+
+    const checkPage = (needed = 10) => { if (y + needed > 270) { doc.addPage(); y = 20; } };
+
+    // Header
+    doc.setFillColor(154, 165, 129);
+    doc.rect(0, 0, 210, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+    doc.text(title, margin, 18);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text(`Generated ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}`, margin, 25);
+    y = 40;
+
+    const source = year ? visited.filter(p => (p.dates||[p.date]).some(d => new Date(d).getFullYear() === parseInt(year))) : visited;
+
+    // Summary stats
+    doc.setTextColor(154, 165, 129); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text('Summary', margin, y); y += 6;
+    doc.setTextColor(80, 80, 80); doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    const avgR = source.length ? (source.reduce((s,p)=>s+p.rating,0)/source.length).toFixed(1) : 'N/A';
+    const stats = [
+        `Places: ${source.length}`,
+        `Countries: ${new Set(source.map(p=>p.country)).size}`,
+        `Cities: ${new Set(source.map(p=>p.city)).size}`,
+        `Avg Rating: ${avgR}/5`,
+        `Total Visits: ${source.reduce((s,p)=>s+(p.dates?.length||1),0)}`
+    ];
+    stats.forEach((s, i) => { doc.text(s, margin + (i % 2) * 95, y + Math.floor(i/2) * 6); });
+    y += Math.ceil(stats.length / 2) * 6 + 8;
+
+    // Places by country
+    const hierarchy = {};
+    source.forEach(p => {
+        const co = p.country||'Unknown'; const ci = p.city||'Unknown';
+        if (!hierarchy[co]) hierarchy[co] = {};
+        if (!hierarchy[co][ci]) hierarchy[co][ci] = [];
+        hierarchy[co][ci].push(p);
+    });
+
+    Object.keys(hierarchy).sort().forEach(co => {
+        checkPage(16);
+        doc.setFillColor(232, 235, 228);
+        doc.rect(margin - 3, y - 5, maxW + 6, 9, 'F');
+        doc.setTextColor(154, 165, 129); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+        doc.text(co, margin, y); y += lh + 2;
+
+        Object.keys(hierarchy[co]).sort().forEach(ci => {
+            checkPage(12);
+            doc.setTextColor(133, 158, 172); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+            doc.text('  ' + ci, margin, y); y += lh;
+
+            hierarchy[co][ci].forEach(p => {
+                checkPage(18);
+                doc.setTextColor(50, 50, 50); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+                doc.text('    ' + p.name, margin, y);
+                doc.setTextColor(154, 165, 129); doc.setFont('helvetica', 'normal');
+                doc.text(getStarText(p.rating), 155, y); y += 5;
+
+                doc.setTextColor(120, 120, 120); doc.setFontSize(8);
+                const dates = (p.dates||[p.date]).map(d => new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})).join(', ');
+                doc.text('    ' + dates, margin, y); y += 4;
+
+                if (p.zepedaStars > 0) { doc.setTextColor(133, 158, 172); doc.text('    Zepeda: ' + '!'.repeat(p.zepedaStars), margin, y); y += 4; }
+                if (p.trip) { doc.setTextColor(154, 165, 129); doc.text('    Trip: ' + p.trip, margin, y); y += 4; }
+                if (p.tags?.length) { doc.setTextColor(100, 100, 100); const tagLine = p.tags.join(', '); doc.text('    Tags: ' + tagLine, margin, y, { maxWidth: maxW - 10 }); y += 4; }
+                if (p.notes) {
+                    doc.setTextColor(100, 100, 100);
+                    const lines = doc.splitTextToSize('    ' + p.notes, maxW - 10);
+                    lines.slice(0, 3).forEach(line => { checkPage(5); doc.text(line, margin, y); y += 4; });
+                }
+                y += 3;
+                doc.setDrawColor(220, 220, 220); doc.line(margin, y, pageW - margin, y); y += 3;
+            });
+        });
+        y += 2;
+    });
+
+    // Footer on each page
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setTextColor(180, 180, 180); doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+        doc.text(`My Travel Journal  |  Page ${i} of ${pageCount}`, margin, 290);
+    }
+
+    const filename = year ? `travel-journal-${year}.pdf` : 'travel-journal.pdf';
+    doc.save(filename);
+}
+
+// ---- EDIT PLACE ----
+function editPlace(p) {
+    editingId = p.id;
+    document.getElementById('placeName').value = p.name;
+    document.getElementById('placeCity').value = p.city || '';
+    document.getElementById('placeState').value = p.state || '';
+    document.getElementById('placeCountry').value = p.country || '';
+    document.getElementById('placeTrip').value = p.trip || '';
+    document.getElementById('placeMapLink').value = p.mapLink || '';
+    document.getElementById('placeRating').value = p.rating;
+    document.getElementById('ratingValue').textContent = p.rating;
+    updateMainStars(p.rating);
+    lastClickedStar = 0; starClickCount = 0;
+    selectZepeda(p.zepedaStars || 0);
+    document.getElementById('placeTypeTags').value = (p.typeTags||[]).join(', ');
+    document.getElementById('placePeopleTags').value = (p.peopleTags||[]).join(', ');
+    document.getElementById('placeNotes').value = p.notes || '';
+    document.getElementById('datesContainer').innerHTML = '';
+    (p.dates||[p.date]).forEach(d => addDateField(d));
+    currentPhotos = p.photos || [];
+    renderPhotoPreview();
+    document.getElementById('subRatingsContainer').innerHTML = '';
+    subRatingCounter = 0; subRatingClicks = {};
+    Object.entries(p.subRatings||{}).forEach(([cat, val]) => addSubRating(cat, val));
+    document.getElementById('formTitle').textContent = 'Edit Place';
+    showForm();
+}
+
+// ---- RESET FORM ----
+function resetForm() {
+    document.getElementById('placeForm').reset();
+    document.getElementById('placeForm').classList.add('hidden');
+    document.getElementById('filterBar').classList.remove('hidden');
+    editingId = null; currentPhotos = []; subRatingCounter = 0; subRatingClicks = {};
+    lastClickedStar = 0; starClickCount = 0;
+    document.getElementById('placeRating').value = '5';
+    document.getElementById('ratingValue').textContent = '5';
+    updateMainStars(5);
+    selectZepeda(0);
+    document.getElementById('photoPreviewContainer').innerHTML = '';
+    document.getElementById('subRatingsContainer').innerHTML = '';
+    document.getElementById('datesContainer').innerHTML = '';
+    setView('list');
+}
+
+
+function showToast(msg) {
+    const t = document.getElementById('successToast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+// ---- UTILS ----
+function esc(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+<div id="successToast">✓ Place saved!</div>
+</body>
+</html>
