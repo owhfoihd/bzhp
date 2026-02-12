@@ -595,7 +595,33 @@ async function handleSubmit(e) {
 }
 
 // ---- STORAGE ----
-async function loadPlaces() {
+/* ===== STORAGE ADAPTER (Safari-safe) ===== */
+
+window.storage = {
+  async set(key, value) {
+    localStorage.setItem(key, value);
+  },
+
+  async get(key) {
+    const value = localStorage.getItem(key);
+    return value ? { value } : null;
+  },
+
+  async delete(key) {
+    localStorage.removeItem(key);
+  },
+
+  async list(prefix = '') {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix)) keys.push(k);
+    }
+    return { keys };
+  }
+};
+
+    async function loadPlaces() {
     try {
         const result = await window.storage.list('place:');
         if (result?.keys?.length) {
