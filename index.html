@@ -1433,6 +1433,7 @@ function esc(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+    <script>
 /* ========= STORAGE SETUP ========= */
 
 const DB_NAME = "app_storage";
@@ -1511,8 +1512,9 @@ async function loadData(key) {
     console.error("Storage unavailable:", err);
   }
 })();
+</script>
 
-    <button onclick="saveData('test','hello')">Save</button>
+<button onclick="saveData('test','hello')">Save</button>
 <button onclick="loadData('test').then(v=>alert(v))">Load</button>
 
 </script>
