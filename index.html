@@ -928,8 +928,7 @@ function getFilteredSorted(wishlistOnly = false) {
 }
 
 // ---- RENDER LIST ----
-function renderList() el.innerHTML = html;
-{
+function renderList() {
     const filtered = getFilteredSorted();
     document.getElementById('placeCount').textContent = `${places.length} places visited`;
     const el = document.getElementById('placesList');
