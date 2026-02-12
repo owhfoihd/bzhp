@@ -929,7 +929,8 @@ function getFilteredSorted(wishlistOnly = false) {
 }
 
 // ---- RENDER LIST ----
-function renderList() {
+function renderList() el.innerHTML = html;
+    {
     const filtered = getFilteredSorted();
     document.getElementById('placeCount').textContent = `${places.length} places visited`;
     const el = document.getElementById('placesList');
@@ -991,6 +992,13 @@ function buildCitySection(ciId, ci, placesArr) {
         </div>
     </div>`;
 }
+    <button
+  onclick="event.stopPropagation(); deletePlace('${p.id}')"
+  class="text-red-500 text-xs font-semibold px-2 py-1 rounded"
+>
+  Delete
+</button>
+
 function renderCard(p) {
     const dates = p.dates && p.dates.filter(Boolean).length ? p.dates.filter(Boolean) : (p.date ? [p.date] : []);
     const latestDate = dates.length ? new Date(dates[dates.length-1]).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
