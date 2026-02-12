@@ -1514,8 +1514,14 @@ async function loadData(key) {
 })();
 </script>
 
-<button onclick="saveData('test','hello')">Save</button>
-<button onclick="loadData('test').then(v=>alert(v))">Load</button>
+    <script>
+try {
+  localStorage.setItem("test", "123");
+  alert("localStorage works");
+} catch (e) {
+  alert("localStorage failed: " + e.name);
+}
+</script>
 
 </script>
 </body>
