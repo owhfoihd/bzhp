@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -68,7 +67,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
 <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
 
   <!-- HEADER -->
-
   <div class="p-5 text-white no-print" style="background:linear-gradient(135deg,#6E8175,#859EAC);">
     <h1 class="text-2xl font-bold mb-1">My Travel Journal</h1>
     <p class="text-sm opacity-80 mb-3" id="placeCount">0 places visited</p>
@@ -85,7 +83,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- FILTER BAR -->
-
   <div id="filterBar" class="p-4 bg-gray-50 border-b no-print">
     <div class="flex flex-col gap-2">
       <input type="text" id="searchInput" placeholder="Search places..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" autocomplete="off"/>
@@ -96,39 +93,35 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
       <div id="activeFilterDisplay" class="hidden flex-wrap gap-1" style="display:none;"></div>
       <div id="activeSortDisplay" class="hidden flex-wrap gap-1" style="display:none;"></div>
 
-```
-  <div id="filterPanel" class="hidden border border-gray-200 rounded-lg bg-white p-3 space-y-3">
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Trip</div>
-    <div id="filterTripOptions" class="flex flex-wrap gap-2"></div>
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Year</div>
-    <div id="filterYearOptions" class="flex flex-wrap gap-2"></div>
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Rating</div>
-    <div class="flex flex-wrap gap-2">
-      <span class="filter-chip" data-type="rating" data-value="5" onclick="toggleFilterChip(this)">★★★★★ 5</span>
-      <span class="filter-chip" data-type="rating" data-value="4.5" onclick="toggleFilterChip(this)">4.5+</span>
-      <span class="filter-chip" data-type="rating" data-value="4" onclick="toggleFilterChip(this)">4+</span>
-      <span class="filter-chip" data-type="rating" data-value="3" onclick="toggleFilterChip(this)">3+</span>
+      <div id="filterPanel" class="hidden border border-gray-200 rounded-lg bg-white p-3 space-y-3">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Trip</div>
+        <div id="filterTripOptions" class="flex flex-wrap gap-2"></div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Year</div>
+        <div id="filterYearOptions" class="flex flex-wrap gap-2"></div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Rating</div>
+        <div class="flex flex-wrap gap-2">
+          <span class="filter-chip" data-type="rating" data-value="5" onclick="toggleFilterChip(this)">★★★★★ 5</span>
+          <span class="filter-chip" data-type="rating" data-value="4.5" onclick="toggleFilterChip(this)">4.5+</span>
+          <span class="filter-chip" data-type="rating" data-value="4" onclick="toggleFilterChip(this)">4+</span>
+          <span class="filter-chip" data-type="rating" data-value="3" onclick="toggleFilterChip(this)">3+</span>
+        </div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Type</div>
+        <div id="filterTagOptions" class="flex flex-wrap gap-2"></div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Visited With</div>
+        <div id="filterPeopleOptions" class="flex flex-wrap gap-2"></div>
+        <button onclick="clearAllFilters()" class="text-xs text-red-400 hover:text-red-600">Clear all filters</button>
+      </div>
+
+      <div id="sortPanel" class="hidden border border-gray-200 rounded-lg bg-white p-3">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Active sorts</div>
+        <div id="sortChips" class="flex flex-wrap gap-2 mb-3"></div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Add sort</div>
+        <div id="sortOptions" class="flex flex-wrap gap-2"></div>
+      </div>
     </div>
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Type</div>
-    <div id="filterTagOptions" class="flex flex-wrap gap-2"></div>
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Visited With</div>
-    <div id="filterPeopleOptions" class="flex flex-wrap gap-2"></div>
-    <button onclick="clearAllFilters()" class="text-xs text-red-400 hover:text-red-600">Clear all filters</button>
-  </div>
-
-  <div id="sortPanel" class="hidden border border-gray-200 rounded-lg bg-white p-3">
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Active sorts</div>
-    <div id="sortChips" class="flex flex-wrap gap-2 mb-3"></div>
-    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Add sort</div>
-    <div id="sortOptions" class="flex flex-wrap gap-2"></div>
-  </div>
-</div>
-```
-
   </div>
 
   <!-- ADD/EDIT FORM -->
-
   <form id="placeForm" class="p-4 bg-gray-50 border-b hidden">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold text-gray-800" id="formTitle">Add New Place</h2>
@@ -139,143 +132,139 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
     </div>
     <div class="space-y-3">
 
-```
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Place Name *</label>
-    <input type="text" id="placeName" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Eiffel Tower"/>
-  </div>
-
-  <div class="grid grid-cols-3 gap-2">
-    <div class="relative">
-      <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">City *</label>
-      <input type="text" id="placeCity" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Paris" autocomplete="off"/>
-      <div id="citySuggestions" class="tag-suggestions"></div>
-    </div>
-    <div class="relative">
-      <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">State</label>
-      <input type="text" id="placeState" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="CA" autocomplete="off"/>
-      <div id="stateSuggestions" class="tag-suggestions"></div>
-    </div>
-    <div class="relative">
-      <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Country *</label>
-      <input type="text" id="placeCountry" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="France" autocomplete="off"/>
-      <div id="countrySuggestions" class="tag-suggestions"></div>
-    </div>
-  </div>
-
-  <div class="relative">
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Trip Group (optional)</label>
-    <input type="text" id="placeTrip" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Europe 2024" autocomplete="off"/>
-    <div id="tripSuggestions" class="tag-suggestions"></div>
-  </div>
-
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Maps Link (optional)</label>
-    <input type="text" id="placeMapLink" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Paste Google or Apple Maps link..." oninput="previewMapCoords(this.value)"/>
-    <div id="mapCoordsPreview" class="text-xs mt-1" style="display:none;"></div>
-  </div>
-
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Visit Dates (optional)</label>
-    <div id="datesContainer" class="space-y-2"></div>
-    <button type="button" onclick="addDateField()" class="mt-2 text-sm px-3 py-1 border rounded-lg" style="border-color:#97AC9F;color:#97AC9F;">+ Add Date</button>
-  </div>
-
-  <div class="grid grid-cols-2 gap-3">
-    <div>
-      <div class="flex items-center justify-between mb-1">
-        <label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hunter: <span id="hunterRatingValue">5</span>/5</label>
-        <button type="button" id="hunterNaBtn" onclick="toggleNA('hunter')" class="text-xs px-1.5 py-0.5 rounded font-semibold border" style="border-color:#d1d5db;color:#9ca3af;">N/A</button>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Place Name *</label>
+        <input type="text" id="placeName" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Eiffel Tower"/>
       </div>
-      <div class="flex gap-1" id="hunterStars">
-        <span class="star-btn" onclick="setRating('hunter',1)" style="color:#97AC9F;">★</span>
-        <span class="star-btn" onclick="setRating('hunter',2)" style="color:#97AC9F;">★</span>
-        <span class="star-btn" onclick="setRating('hunter',3)" style="color:#97AC9F;">★</span>
-        <span class="star-btn" onclick="setRating('hunter',4)" style="color:#97AC9F;">★</span>
-        <span class="star-btn" onclick="setRating('hunter',5)" style="color:#97AC9F;">★</span>
+
+      <div class="grid grid-cols-3 gap-2">
+        <div class="relative">
+          <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">City *</label>
+          <input type="text" id="placeCity" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Paris" autocomplete="off"/>
+          <div id="citySuggestions" class="tag-suggestions"></div>
+        </div>
+        <div class="relative">
+          <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">State</label>
+          <input type="text" id="placeState" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="CA" autocomplete="off"/>
+          <div id="stateSuggestions" class="tag-suggestions"></div>
+        </div>
+        <div class="relative">
+          <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Country *</label>
+          <input type="text" id="placeCountry" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="France" autocomplete="off"/>
+          <div id="countrySuggestions" class="tag-suggestions"></div>
+        </div>
       </div>
-      <input type="hidden" id="hunterRating" value="5">
-      <input type="hidden" id="hunterNA" value="0">
-    </div>
-    <div>
-      <div class="flex items-center justify-between mb-1">
-        <label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Brandon: <span id="brandonRatingValue">5</span>/5</label>
-        <button type="button" id="brandonNaBtn" onclick="toggleNA('brandon')" class="text-xs px-1.5 py-0.5 rounded font-semibold border" style="border-color:#d1d5db;color:#9ca3af;">N/A</button>
+
+      <div class="relative">
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Trip Group (optional)</label>
+        <input type="text" id="placeTrip" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Europe 2024" autocomplete="off"/>
+        <div id="tripSuggestions" class="tag-suggestions"></div>
       </div>
-      <div class="flex gap-1" id="brandonStars">
-        <span class="star-btn" onclick="setRating('brandon',1)" style="color:#859EAC;">★</span>
-        <span class="star-btn" onclick="setRating('brandon',2)" style="color:#859EAC;">★</span>
-        <span class="star-btn" onclick="setRating('brandon',3)" style="color:#859EAC;">★</span>
-        <span class="star-btn" onclick="setRating('brandon',4)" style="color:#859EAC;">★</span>
-        <span class="star-btn" onclick="setRating('brandon',5)" style="color:#859EAC;">★</span>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Maps Link (optional)</label>
+        <input type="text" id="placeMapLink" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Paste Google or Apple Maps link..." oninput="previewMapCoords(this.value)"/>
+        <div id="mapCoordsPreview" class="text-xs mt-1" style="display:none;"></div>
       </div>
-      <input type="hidden" id="brandonRating" value="5">
-      <input type="hidden" id="brandonNA" value="0">
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Visit Dates (optional)</label>
+        <div id="datesContainer" class="space-y-2"></div>
+        <button type="button" onclick="addDateField()" class="mt-2 text-sm px-3 py-1 border rounded-lg" style="border-color:#97AC9F;color:#97AC9F;">+ Add Date</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Hunter: <span id="hunterRatingValue">5</span>/5</label>
+            <button type="button" id="hunterNaBtn" onclick="toggleNA('hunter')" class="text-xs px-1.5 py-0.5 rounded font-semibold border" style="border-color:#d1d5db;color:#9ca3af;">N/A</button>
+          </div>
+          <div class="flex gap-1" id="hunterStars">
+            <span class="star-btn" onclick="setRating('hunter',1)" style="color:#97AC9F;">★</span>
+            <span class="star-btn" onclick="setRating('hunter',2)" style="color:#97AC9F;">★</span>
+            <span class="star-btn" onclick="setRating('hunter',3)" style="color:#97AC9F;">★</span>
+            <span class="star-btn" onclick="setRating('hunter',4)" style="color:#97AC9F;">★</span>
+            <span class="star-btn" onclick="setRating('hunter',5)" style="color:#97AC9F;">★</span>
+          </div>
+          <input type="hidden" id="hunterRating" value="5">
+          <input type="hidden" id="hunterNA" value="0">
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Brandon: <span id="brandonRatingValue">5</span>/5</label>
+            <button type="button" id="brandonNaBtn" onclick="toggleNA('brandon')" class="text-xs px-1.5 py-0.5 rounded font-semibold border" style="border-color:#d1d5db;color:#9ca3af;">N/A</button>
+          </div>
+          <div class="flex gap-1" id="brandonStars">
+            <span class="star-btn" onclick="setRating('brandon',1)" style="color:#859EAC;">★</span>
+            <span class="star-btn" onclick="setRating('brandon',2)" style="color:#859EAC;">★</span>
+            <span class="star-btn" onclick="setRating('brandon',3)" style="color:#859EAC;">★</span>
+            <span class="star-btn" onclick="setRating('brandon',4)" style="color:#859EAC;">★</span>
+            <span class="star-btn" onclick="setRating('brandon',5)" style="color:#859EAC;">★</span>
+          </div>
+          <input type="hidden" id="brandonRating" value="5">
+          <input type="hidden" id="brandonNA" value="0">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Zepeda Stars (optional)</label>
+        <div class="flex gap-2">
+          <button type="button" class="zepeda-btn" data-value="1" onclick="selectZepeda(1)">!</button>
+          <button type="button" class="zepeda-btn" data-value="2" onclick="selectZepeda(2)">!!</button>
+          <button type="button" class="zepeda-btn" data-value="3" onclick="selectZepeda(3)">!!!</button>
+        </div>
+        <input type="hidden" id="placeZepeda" value="0">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Memory Weight: <span id="enjoymentRatingValue">5</span>/5</label>
+        <div class="flex gap-1" id="enjoymentStars">
+          <span class="star-btn" onclick="setRating('enjoyment',1)" style="color:#E6C8C6;">★</span>
+          <span class="star-btn" onclick="setRating('enjoyment',2)" style="color:#E6C8C6;">★</span>
+          <span class="star-btn" onclick="setRating('enjoyment',3)" style="color:#E6C8C6;">★</span>
+          <span class="star-btn" onclick="setRating('enjoyment',4)" style="color:#E6C8C6;">★</span>
+          <span class="star-btn" onclick="setRating('enjoyment',5)" style="color:#E6C8C6;">★</span>
+        </div>
+        <input type="hidden" id="enjoymentRating" value="5">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div class="relative">
+          <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Type of Place</label>
+          <input type="text" id="placeTypeTags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="restaurant, museum..." autocomplete="off"/>
+          <div id="typeTagSuggestions" class="tag-suggestions"></div>
+        </div>
+        <div class="relative">
+          <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Visited With</label>
+          <input type="text" id="placePeopleTags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="family, friends..." autocomplete="off"/>
+          <div id="peopleTagSuggestions" class="tag-suggestions"></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Photos</label>
+        <input type="file" id="placePhotos" accept="image/*" multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/>
+        <div id="photoPreviewContainer" class="mt-2 flex flex-wrap gap-2"></div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Notes</label>
+        <div id="notesThread" class="border border-gray-200 rounded-xl bg-white mb-2 min-h-16 max-h-48 overflow-y-auto p-2 space-y-1"></div>
+        <div class="flex gap-2">
+          <input type="text" id="noteInput" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Add a note..."/>
+          <button type="button" onclick="addNote()" class="px-3 py-2 text-white rounded-lg text-sm font-semibold" style="background:#97AC9F;">Post</button>
+        </div>
+        <input type="hidden" id="placeNotes" value="[]">
+      </div>
     </div>
-  </div>
 
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Zepeda Stars (optional)</label>
-    <div class="flex gap-2">
-      <button type="button" class="zepeda-btn" data-value="1" onclick="selectZepeda(1)">!</button>
-      <button type="button" class="zepeda-btn" data-value="2" onclick="selectZepeda(2)">!!</button>
-      <button type="button" class="zepeda-btn" data-value="3" onclick="selectZepeda(3)">!!!</button>
+    <div class="flex gap-2 mt-4">
+      <button type="submit" class="flex-1 text-white py-3 rounded-lg font-semibold text-sm" style="background:#97AC9F;">Save Place</button>
+      <button type="button" onclick="cancelForm()" class="px-5 py-3 border border-gray-300 text-gray-600 rounded-lg text-sm font-semibold">Cancel</button>
     </div>
-    <input type="hidden" id="placeZepeda" value="0">
-  </div>
-
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Memory Weight: <span id="enjoymentRatingValue">5</span>/5</label>
-    <div class="flex gap-1" id="enjoymentStars">
-      <span class="star-btn" onclick="setRating('enjoyment',1)" style="color:#E6C8C6;">★</span>
-      <span class="star-btn" onclick="setRating('enjoyment',2)" style="color:#E6C8C6;">★</span>
-      <span class="star-btn" onclick="setRating('enjoyment',3)" style="color:#E6C8C6;">★</span>
-      <span class="star-btn" onclick="setRating('enjoyment',4)" style="color:#E6C8C6;">★</span>
-      <span class="star-btn" onclick="setRating('enjoyment',5)" style="color:#E6C8C6;">★</span>
-    </div>
-    <input type="hidden" id="enjoymentRating" value="5">
-  </div>
-
-  <div class="grid grid-cols-2 gap-2">
-    <div class="relative">
-      <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Type of Place</label>
-      <input type="text" id="placeTypeTags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="restaurant, museum..." autocomplete="off"/>
-      <div id="typeTagSuggestions" class="tag-suggestions"></div>
-    </div>
-    <div class="relative">
-      <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Visited With</label>
-      <input type="text" id="placePeopleTags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="family, friends..." autocomplete="off"/>
-      <div id="peopleTagSuggestions" class="tag-suggestions"></div>
-    </div>
-  </div>
-
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Photos</label>
-    <input type="file" id="placePhotos" accept="image/*" multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/>
-    <div id="photoPreviewContainer" class="mt-2 flex flex-wrap gap-2"></div>
-  </div>
-
-  <div>
-    <label class="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Notes</label>
-    <div id="notesThread" class="border border-gray-200 rounded-xl bg-white mb-2 min-h-16 max-h-48 overflow-y-auto p-2 space-y-1"></div>
-    <div class="flex gap-2">
-      <input type="text" id="noteInput" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Add a note..."/>
-      <button type="button" onclick="addNote()" class="px-3 py-2 text-white rounded-lg text-sm font-semibold" style="background:#97AC9F;">Post</button>
-    </div>
-    <input type="hidden" id="placeNotes" value="[]">
-  </div>
-</div>
-
-<div class="flex gap-2 mt-4">
-  <button type="submit" class="flex-1 text-white py-3 rounded-lg font-semibold text-sm" style="background:#97AC9F;">Save Place</button>
-  <button type="button" onclick="cancelForm()" class="px-5 py-3 border border-gray-300 text-gray-600 rounded-lg text-sm font-semibold">Cancel</button>
-</div>
-```
-
   </form>
 
   <!-- LIST VIEW -->
-
   <div id="listView">
     <div class="px-4 pt-3 pb-2 bg-white border-b sticky top-0 z-10 no-print">
       <div class="relative">
@@ -288,7 +277,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- MAP VIEW -->
-
   <div id="mapView" class="hidden">
     <!-- Map mode toggle -->
     <div class="flex gap-2 p-3 pb-0" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
@@ -301,7 +289,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- STATS VIEW -->
-
   <div id="statsView" class="p-4 hidden">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold text-gray-800">Statistics</h2>
@@ -311,7 +298,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- CALENDAR VIEW -->
-
   <div id="calendarView" class="p-4 hidden">
     <div class="flex items-center justify-between mb-4">
       <button onclick="calPrev()" class="w-9 h-9 rounded-full flex items-center justify-center text-xl font-bold hover:bg-gray-100" style="color:#97AC9F;border:none;background:none;cursor:pointer;">‹</button>
@@ -335,7 +321,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- WISHLIST VIEW -->
-
   <div id="wishlistView" class="p-4 hidden">
     <div class="flex justify-between items-center mb-4">
       <div>
@@ -348,7 +333,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- TIMELINE VIEW -->
-
   <div id="timelineView" class="hidden">
     <!-- On This Day banner -->
     <div id="onThisDayBanner" class="p-4 border-b" style="background:linear-gradient(135deg,#f0f4ec,#dce8f0);"></div>
@@ -357,7 +341,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- DETAIL VIEW -->
-
   <div id="detailView" class="hidden overflow-hidden">
     <div class="relative" id="detailHeaderWrap"></div>
     <div class="p-4 space-y-4" id="detailBody"></div>
@@ -369,7 +352,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- GROUP DETAIL VIEW (city / state / country / trip) -->
-
   <div id="groupDetailView" class="hidden">
     <div class="relative" id="groupDetailHeaderWrap">
       <div id="groupDetailHeader" class="w-full flex items-end px-5 pb-4" style="min-height:110px;background:linear-gradient(135deg,#6E8175,#859EAC);">
@@ -434,7 +416,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- AUTHOR PICKER MODAL -->
-
   <div id="authorModal" style="display:none;position:fixed;inset:0;z-index:3500;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
     <div style="background:white;border-radius:20px;padding:24px;width:80%;max-width:300px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.25);">
       <div style="font-size:1rem;font-weight:700;color:#2d3748;margin-bottom:6px;">Who's posting?</div>
@@ -449,7 +430,6 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- CONFIRM MODAL -->
-
   <div id="confirmModal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
     <div style="background:white;border-radius:18px;padding:28px 24px;width:88%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
       <div style="font-size:1.05rem;font-weight:700;color:#1a202c;margin-bottom:8px;" id="confirmTitle">Confirm</div>
@@ -462,65 +442,60 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; background:
   </div>
 
   <!-- SYNC MODAL -->
-
   <div id="syncModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;" onclick="if(event.target===this)closeSyncModal()">
     <div style="background:white;border-radius:20px;padding:0;width:92%;max-width:400px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;">
 
-```
-  <!-- Header -->
-  <div style="padding:20px 22px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      <div style="font-size:1.05rem;font-weight:700;color:#1a202c;">Google Drive Sync</div>
-      <div style="font-size:0.75rem;color:#888;margin-top:1px;">Your journal, saved to your Drive</div>
-    </div>
-    <span onclick="closeSyncModal()" style="cursor:pointer;font-size:1.5rem;color:#ccc;line-height:1;">×</span>
-  </div>
-
-  <!-- Not signed in -->
-  <div id="syncSignedOut" style="padding:24px 22px;text-align:center;">
-    <div style="font-size:2.5rem;margin-bottom:10px;">☁️</div>
-    <div style="font-size:0.9rem;font-weight:600;color:#2d3748;margin-bottom:6px;">Sync across devices</div>
-    <div style="font-size:0.82rem;color:#718096;margin-bottom:20px;line-height:1.5;">Sign in with Google to save your journal to Google Drive and access it from any device.</div>
-    <button onclick="gdSignIn()" id="gdSignInBtn" style="width:100%;padding:12px;background:#4285F4;color:white;border:none;border-radius:12px;font-weight:600;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#fff" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#fff" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2.04a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#fff" d="M4.5 10.48A4.8 4.8 0 014.5 9a4.8 4.8 0 01.25-1.48V5.45H1.83a8 8 0 000 7.1l2.67-2.07z"/><path fill="#fff" d="M8.98 3.58c1.32 0 2.5.45 3.44 1.35l2.54-2.54A8 8 0 001.83 5.45L4.5 7.52a4.77 4.77 0 014.48-3.94z"/></svg>
-      Sign in with Google
-    </button>
-    <div id="gdClientIdWarning" style="display:none;margin-top:12px;padding:10px;background:#fff3cd;border-radius:8px;font-size:0.75rem;color:#856404;text-align:left;">
-      ⚠️ <strong>Setup required:</strong> Open the HTML file, find <code>YOUR_GOOGLE_CLIENT_ID</code> near the top of the &lt;script&gt; and replace it with your OAuth Client ID from <a href="https://console.cloud.google.com" target="_blank" style="color:#4285F4;">Google Cloud Console</a>.
-    </div>
-  </div>
-
-  <!-- Signed in -->
-  <div id="syncSignedIn" style="display:none;padding:20px 22px;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding:12px;background:#f8f9fa;border-radius:12px;">
-      <img id="gdUserAvatar" src="" style="width:38px;height:38px;border-radius:50%;display:none;" />
-      <div style="flex:1;min-width:0;">
-        <div id="gdUserName" style="font-size:0.88rem;font-weight:600;color:#2d3748;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div id="gdUserEmail" style="font-size:0.75rem;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      <!-- Header -->
+      <div style="padding:20px 22px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:1.05rem;font-weight:700;color:#1a202c;">Google Drive Sync</div>
+          <div style="font-size:0.75rem;color:#888;margin-top:1px;">Your journal, saved to your Drive</div>
+        </div>
+        <span onclick="closeSyncModal()" style="cursor:pointer;font-size:1.5rem;color:#ccc;line-height:1;">×</span>
       </div>
-      <button onclick="gdSignOut()" style="padding:5px 10px;border:1.5px solid #e2e8f0;background:white;border-radius:8px;font-size:0.75rem;color:#718096;cursor:pointer;white-space:nowrap;">Sign out</button>
+
+      <!-- Not signed in -->
+      <div id="syncSignedOut" style="padding:24px 22px;text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:10px;">☁️</div>
+        <div style="font-size:0.9rem;font-weight:600;color:#2d3748;margin-bottom:6px;">Sync across devices</div>
+        <div style="font-size:0.82rem;color:#718096;margin-bottom:20px;line-height:1.5;">Sign in with Google to save your journal to Google Drive and access it from any device.</div>
+        <button onclick="gdSignIn()" id="gdSignInBtn" style="width:100%;padding:12px;background:#4285F4;color:white;border:none;border-radius:12px;font-weight:600;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#fff" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#fff" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2.04a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#fff" d="M4.5 10.48A4.8 4.8 0 014.5 9a4.8 4.8 0 01.25-1.48V5.45H1.83a8 8 0 000 7.1l2.67-2.07z"/><path fill="#fff" d="M8.98 3.58c1.32 0 2.5.45 3.44 1.35l2.54-2.54A8 8 0 001.83 5.45L4.5 7.52a4.77 4.77 0 014.48-3.94z"/></svg>
+          Sign in with Google
+        </button>
+        <div id="gdClientIdWarning" style="display:none;margin-top:12px;padding:10px;background:#fff3cd;border-radius:8px;font-size:0.75rem;color:#856404;text-align:left;">
+          ⚠️ <strong>Setup required:</strong> Open the HTML file, find <code>YOUR_GOOGLE_CLIENT_ID</code> near the top of the &lt;script&gt; and replace it with your OAuth Client ID from <a href="https://console.cloud.google.com" target="_blank" style="color:#4285F4;">Google Cloud Console</a>.
+        </div>
+      </div>
+
+      <!-- Signed in -->
+      <div id="syncSignedIn" style="display:none;padding:20px 22px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding:12px;background:#f8f9fa;border-radius:12px;">
+          <img id="gdUserAvatar" src="" style="width:38px;height:38px;border-radius:50%;display:none;" />
+          <div style="flex:1;min-width:0;">
+            <div id="gdUserName" style="font-size:0.88rem;font-weight:600;color:#2d3748;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="gdUserEmail" style="font-size:0.75rem;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          </div>
+          <button onclick="gdSignOut()" style="padding:5px 10px;border:1.5px solid #e2e8f0;background:white;border-radius:8px;font-size:0.75rem;color:#718096;cursor:pointer;white-space:nowrap;">Sign out</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button onclick="gdSaveToCloud()" id="gdSaveBtn" style="width:100%;padding:12px;background:#97AC9F;color:white;border:none;border-radius:12px;font-weight:600;font-size:0.88rem;cursor:pointer;">
+            ☁️ Save to Google Drive
+          </button>
+          <button onclick="gdLoadFromCloud()" id="gdLoadBtn" style="width:100%;padding:12px;background:#859EAC;color:white;border:none;border-radius:12px;font-weight:600;font-size:0.88rem;cursor:pointer;">
+            ↓ Load from Google Drive
+          </button>
+        </div>
+
+        <div id="gdSyncStatus" style="margin-top:12px;text-align:center;font-size:0.8rem;font-weight:600;min-height:20px;"></div>
+        <div id="gdLastSync" style="text-align:center;font-size:0.72rem;color:#aaa;margin-top:4px;"></div>
+      </div>
+
     </div>
-
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button onclick="gdSaveToCloud()" id="gdSaveBtn" style="width:100%;padding:12px;background:#97AC9F;color:white;border:none;border-radius:12px;font-weight:600;font-size:0.88rem;cursor:pointer;">
-        ☁️ Save to Google Drive
-      </button>
-      <button onclick="gdLoadFromCloud()" id="gdLoadBtn" style="width:100%;padding:12px;background:#859EAC;color:white;border:none;border-radius:12px;font-weight:600;font-size:0.88rem;cursor:pointer;">
-        ↓ Load from Google Drive
-      </button>
-    </div>
-
-    <div id="gdSyncStatus" style="margin-top:12px;text-align:center;font-size:0.8rem;font-weight:600;min-height:20px;"></div>
-    <div id="gdLastSync" style="text-align:center;font-size:0.72rem;color:#aaa;margin-top:4px;"></div>
-  </div>
-
-</div>
-```
-
   </div>
 
   <!-- PHOTO MODAL -->
-
   <div id="photoModal" class="modal">
     <span onclick="document.getElementById('photoModal').classList.remove('active')" class="absolute top-4 right-6 text-white text-4xl cursor-pointer">&times;</span>
     <img id="modalImg" src="" alt="Photo">
@@ -3522,6 +3497,5 @@ function esc(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 </script>
-
 </body>
 </html>
