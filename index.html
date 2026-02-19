@@ -1281,17 +1281,101 @@ function gdSaveToCloud() {
 
 // Load places from Drive, merge with local
 function gdLoadFromCloud() {
-  if (!gdAccessToken) { gdSignIn(); return; }
-  gdSetBtnLoading('gdLoadBtn', true, '↓ Load from Google Drive');
-  gdSetStatus('Loading...', '#859EAC');
+  if (!gdAccessToken) {
+    gdSignIn();
+    return;
+  }
+
+  gdSetBtnLoading("gdLoadBtn", true, "↓ Load from Google Drive");
+  gdSetStatus("Loading...");
 
   var fileId = localStorage.getItem(GD_FILE_ID_KEY);
 
   function loadFile(id) {
-    return fetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media', {
-      headers: { Authorization: 'Bearer ' + gdAccessToken }
-    }).then(function(r){ return r.json(); });
+    return fetch("https://www.googleapis.com/drive/v3/files/" + id + "?alt=media", {
+      headers: { Authorization: "Bearer " + gdAccessToken }
+    })
+    .then(r => {
+      if (!r.ok) throw new Error("Drive fetch failed");
+      return r.json();
+    });
   }
+
+  function findFile() {
+    return fetch(
+      "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='" +
+      GD_FILE_NAME +
+      "'&fields=files(id)",
+      { headers: { Authorization: "Bearer " + gdAccessToken } }
+    )
+    .then(r => r.json())
+    .then(resp => {
+      if (resp.files && resp.files.length > 0) {
+        var id = resp.files[0].id;
+        localStorage.setItem(GD_FILE_ID_KEY, id);
+        return loadFile(id);
+      }
+      return null;
+    });
+  }
+
+  var promise = fileId ? loadFile(fileId).catch(findFile) : findFile();
+
+  promise
+    .then(data => {
+
+      if (!data) {
+        gdSetStatus("No saved data found.", "#e57373");
+        gdSetBtnLoading("gdLoadBtn", false, "↓ Load from Google Drive");
+        return;
+      }
+
+      if (!data.places || !Array.isArray(data.places)) {
+        console.error("Unexpected Drive data:", data);
+        gdSetStatus("Drive file format invalid.", "#e57373");
+        gdSetBtnLoading("gdLoadBtn", false, "↓ Load from Google Drive");
+        return;
+      }
+
+      var added = 0;
+      var updated = 0;
+
+      data.places.forEach(function (p) {
+        if (!p || !p.id) return;
+
+        var idx = places.findIndex(function (x) {
+          return x.id === p.id;
+        });
+
+        if (idx >= 0) {
+          places[idx] = p;
+          updated++;
+        } else {
+          places.push(p);
+          added++;
+        }
+
+        saveToStorage(p);
+      });
+
+      rebuildSets();
+      refreshYearSelect();
+      renderCurrentView();
+
+      localStorage.setItem("tj_last_sync", new Date().toISOString());
+
+      gdSetStatus("✓ Loaded (" + added + " new, " + updated + " updated)");
+      showToast("↓ Loaded from Google Drive");
+
+      gdSetBtnLoading("gdLoadBtn", false, "↓ Load from Google Drive");
+    })
+    .catch(function (e) {
+      console.error("Load error:", e);
+      gdSetStatus("Load failed: " + e.message, "#e57373");
+      gdSetBtnLoading("gdLoadBtn", false, "↓ Load from Google Drive");
+    });
+}
+
 
   function findAndLoad() {
     // Search appdata for our file
