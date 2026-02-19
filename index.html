@@ -1291,8 +1291,17 @@ function gdShowSignedOut() {
 }
 
 /* ---------- START ---------- */
+  
+  // Wait until Google Identity is fully loaded before initializing
+function waitForGoogle() {
+  if (window.google && google.accounts && google.accounts.oauth2) {
+    gdInit();
+  } else {
+    setTimeout(waitForGoogle, 100);
+  }
+}
 
-window.addEventListener("load", gdInit);
+window.addEventListener("load", waitForGoogle);
 
 function renderCurrentView() {
   if (currentView === 'list') renderList();
