@@ -1,17 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Travel Journal</title>
+
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://accounts.google.com/gsi/client" async defer onload="onGsiLoad()"></script>
-<script src="https://apis.google.com/js/api.js" async defer onload="onGapiLoad()"></script>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client"></script>
+
+<!-- Define your Client ID -->
+<script>
+const GD_CLIENT_ID = "YOUR_REAL_CLIENT_ID.apps.googleusercontent.com";
+</script>
+
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
+
 body { background:#6E8175; min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",sans-serif; }
 .photo-preview { width:80px; height:80px; object-fit:cover; border-radius:8px; cursor:pointer; }
 .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); }
